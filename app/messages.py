@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify
 from app import db
 from app.models import Message, Match, Profile
 from app.views import get_user_from_token
+from app.matches import create_notification
+from app.notifications import email_notification, send_email
 
 bp_messages = Blueprint('messages', __name__, url_prefix='/api/messages')
 
@@ -159,6 +161,10 @@ def send_message(other_user_id):
     db.session.add(message)
     db.session.commit()
     
+    # Added TO Email
+    create_notification(other_user_id, "message")
+
+    
     # Emit WebSocket event
     try:
         emit = get_socket_emit()
@@ -168,6 +174,7 @@ def send_message(other_user_id):
             'content': content,
             'created_at': message.created_at.isoformat()
         })
+        
     except Exception as e:
         print(f"WebSocket emit error: {e}")
     

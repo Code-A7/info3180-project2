@@ -6,6 +6,7 @@ from flask import Blueprint, current_app, jsonify, request
 from app import db
 from app.models import Bookmark, Like, Match, Notification, Profile, User
 from app.views import get_user_from_token
+from app.notifications import email_notification, send_email
 
 bp = Blueprint("matches", __name__, url_prefix="/api/matches")
 
@@ -96,6 +97,9 @@ def create_notification(user_id, notification_type, message, from_user_id=None):
         from_user_id=from_user_id,
     )
     db.session.add(notification)
+    
+    # Email Notification Added
+    email_notification(user_id, notification_type)
 
     # Emit via WebSocket if available
     if socket_emit:
@@ -220,6 +224,7 @@ def like_user(to_user_id):
     is_mutual = check_mutual_like(user.id, to_user_id)
 
     if is_mutual:
+        
         # Create match
         match = create_match(user.id, to_user_id)
 

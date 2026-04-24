@@ -3,9 +3,122 @@ from app import db
 from app.models import Notification, User
 from app.views import get_user_from_token
 
+import os
+import re
+import smtplib
+import time
+from datetime import datetime, timedelta, timezone
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from functools import wraps
+
+import jwt
+from flask import Blueprint, current_app, g, jsonify, request
+
+from app import bcrypt, db
+from app.forms import LoginForm, ProfileForm, RegistrationForm
+from app.models import Profile, User
+
 bp_notifications = Blueprint('notifications', __name__, url_prefix='/api/notifications')
 
+# TEST
 
+def send_email(to_email, subject, body):
+    """Send email with rate limiting"""
+    # Rate limiting: 1 second delay between emails
+    time.sleep(1)
+
+    try:
+        smtp_host = current_app.config.get("MAILTRAP_SMTP_HOST")
+        smtp_port = current_app.config.get("MAILTRAP_SMTP_PORT")
+        smtp_user = current_app.config.get("MAILTRAP_SMTP_USER")
+        smtp_pass = current_app.config.get("MAILTRAP_SMTP_PASS")
+        from_email = current_app.config.get("MAILTRAP_FROM_EMAIL")
+
+        if not smtp_user or not smtp_pass:
+            print(f"[MOCK EMAIL] To: {to_email}, Subject: {subject}")
+            print(f"[MOCK EMAIL] Body: {body[:200]}...")
+            return True
+
+        print(f"[EMAIL] Attempting to send to {to_email} via {smtp_host}:{smtp_port}")
+
+        msg = MIMEMultipart()
+        msg["From"] = from_email
+        msg["To"] = to_email
+        msg["Subject"] = subject
+        msg.attach(MIMEText(body, "html"))
+
+        server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
+        server.starttls()
+        server.login(smtp_user, smtp_pass)
+        server.send_message(msg)
+        server.quit()
+
+        print(f"[EMAIL] Successfully sent to {to_email}")
+        return True
+    except Exception as e:
+        print(f"[EMAIL ERROR] Failed to send email: {e}")
+        return False
+
+
+
+def email_notification(UserID, Notification):
+    # email_notification(User, Admire, Notification):
+    link = 'http://localhost:8080'
+    heading_noti={'like':f"You have a secret admire.", 'match':"You have a new match.", 'matching':"We might have found someone you might like."}
+    body_noti={'like':f"You have a new secret admire. Come and find out who👀👀👀. 👉{link}", 'match':"You have a new match.  Come and find out who👀👀👀. 👉{link}", 'matching':"We might have found someone you might like. Come and find out who👀👀👀. 👉{link}", 'message':"Someone messaged you. Come and find out who👀👀👀. 👉{link}"}
+    # get email from database
+    # to_email=
+    to_email = db.session.query(User.email).filter(UserID == User.id).distinct()
+    
+    heading=heading_noti[Notification]
+    body=body_noti[Notification]
+    send_email(to_email, heading, body)
+
+
+# def notification ():
+#     mail = mt.Mail(
+#         sender=mt.Address(email="hello@demomailtrap.co", name="Mailtrap Test"),
+#         to=[mt.Address(email="atraill1000@gmail.com")],
+#         subject="You are awesome!",
+#         text="Congrats for sending test email with Mailtrap!",
+#         category="Integration Test",
+#     )
+
+#     client = mt.MailtrapClient(token="<YOUR_API_TOKEN>")
+#     response = client.send(mail)
+
+#     print(response)
+
+#     name = form.name.data 
+#     email = form.email.data
+#     subject = form.subject.data
+#     message = form.message.data
+
+#     msg = Message(subject, sender=(name, email), recipients=["sandbox.smtp.mailtrap.io"])
+#     msg.body = message 
+#     # It naa work!!!!
+#     mail.send(msg)
+#     flash('The email was sucessfull sent.')
+#     pass
+
+# def matching_sys():
+#     if age <=preferred_age_min and age>=preferred_age_max:
+#         like +=1
+#     for partner_interest in interests:
+#         for myintrest in myintrest:
+#             if partner_interest==myintrest:
+#                 like+=1	
+#     if partner_gender == gender_preference:
+#         like +=1
+#     if partner_relationship_goal ==relationship_goal:
+#         like +=1
+        
+#     like_pre = like/(len(intrest)+3)*100
+#     return like_pre
+# Test
+
+# IN APP Notifications
 @bp_notifications.route('', methods=['GET'])
 def get_notifications():
     """Get notifications for current user."""

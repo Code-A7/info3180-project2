@@ -3,12 +3,16 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_socketio import SocketIO
+from flask_migrate import Migrate
 from app.config import Config
 import os
+import subprocess
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 socketio = SocketIO()
+migrate = Migrate()
+
 
 # Store user sessions for WebSocket
 connected_users = {}
@@ -22,9 +26,10 @@ def create_app():
     CORS(app, resources={r"/api/*": {"origins": "*"}})
     
     db.init_app(app)
+    migrate.init_app(app, db)
     bcrypt.init_app(app)
     socketio.init_app(app, cors_allowed_origins="*", async_mode='threading')
-    
+
     # Serve uploaded files
     @app.route('/uploads/<path:filename>')
     def serve_upload(filename):
@@ -43,7 +48,7 @@ def create_app():
     app.register_blueprint(matches.bp)
     app.register_blueprint(notifications.bp_notifications)
     app.register_blueprint(messages.bp_messages)
-    
+
     # Set socket emit function
     from app.matches import set_socket_emit
     set_socket_emit(lambda user_id, event, data: 
@@ -81,6 +86,13 @@ def create_app():
 
 app = create_app()
 
+# SEED DATABASE
+# subprocess.run(["python", "seed.py"])
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, port=5000)
+    # SEED DATABASE
+    script_path = "/app/seed.py"
+    script_dir = os.path.dirname(script_path)
+    # Run the script as a separate process in its own directory
+    subprocess.run(["python", script_path], cwd=script_dir)
