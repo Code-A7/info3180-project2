@@ -172,7 +172,7 @@ class Notification(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=utc_now)
 
-    from_user = db.relationship("User", foreign_keys=[from_user_id])
+    gets = db.relationship("User", foreign_keys=[from_user_id])
 
     def to_dict(self):
         return {
@@ -217,7 +217,7 @@ class Message(db.Model):
 
 
 class Bookmark(db.Model):
-    __tablename__ = "bookmarks"
+    __tablename__ = "bookmark"
 
     bid = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
