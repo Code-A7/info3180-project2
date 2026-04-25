@@ -38,6 +38,9 @@ venv
 .env
 .flaskenv
 
+# Instance folder
+instance/
+
 # Playwright / E2E Testing
 e2e/
 playwright-report/

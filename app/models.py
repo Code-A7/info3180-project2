@@ -47,25 +47,25 @@ class User(db.Model):
 
     def to_dict(self):
         return {
-                    "id": self.uid,
-                    "email": self.email,
-                    "hashed password": self.password_hash,
-                    "is_verified": self.is_verified,
-                    "verification_token": self.verification_token,
-                    "created_at": self.created_at,
-                    "last_active": self.last_active,
-                }
+            "id": self.uid,
+            "email": self.email,
+            "hashed password": self.password_hash,
+            "is_verified": self.is_verified,
+            "verification_token": self.verification_token,
+            "created_at": self.created_at,
+            "last_active": self.last_active,
+        }
 
     def __repr__(self):
         return f"<User {self.email}>"
-    
+
 
 class Profile(db.Model):
     __tablename__ = "profiles"
 
     pid = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), nullable=False, unique=True
+        db.Integer, db.ForeignKey("users.uid"), nullable=False, unique=True
     )
 
     name = db.Column(db.String(100), nullable=False)
@@ -119,8 +119,8 @@ class Like(db.Model):
     __tablename__ = "likes"
 
     lid = db.Column(db.Integer, primary_key=True)
-    from_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    to_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    from_user_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
+    to_user_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
     status = db.Column(db.String(20), default="liked")  # 'liked', 'disliked', 'passed'
     created_at = db.Column(db.DateTime, default=utc_now)
 
@@ -142,8 +142,8 @@ class Match(db.Model):
     __tablename__ = "matches"
 
     mid = db.Column(db.Integer, primary_key=True)
-    user1_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    user2_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user1_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
+    user2_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
     created_at = db.Column(db.DateTime, default=utc_now)
 
     user1 = db.relationship("User", foreign_keys=[user1_id])
@@ -165,10 +165,10 @@ class Notification(db.Model):
     __tablename__ = "notifications"
 
     nid = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
     type = db.Column(db.String(50), nullable=False)  # 'match', 'like', 'message'
     message = db.Column(db.String(255), nullable=False)
-    from_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    from_user_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=True)
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=utc_now)
 
@@ -190,8 +190,8 @@ class Message(db.Model):
     __tablename__ = "messages"
 
     meid = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    receiver_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=utc_now)
     read_at = db.Column(db.DateTime, nullable=True)
@@ -220,9 +220,9 @@ class Bookmark(db.Model):
     __tablename__ = "bookmark"
 
     bid = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
     bookmarked_user_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), nullable=False
+        db.Integer, db.ForeignKey("users.uid"), nullable=False
     )
     created_at = db.Column(db.DateTime, default=utc_now)
 
