@@ -18,7 +18,7 @@ def generate_verification_token():
 class User(db.Model):
     __tablename__ = "users"
 
-    id = db.Column(db.Integer, primary_key=True)
+    uid = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(128), nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
@@ -45,14 +45,25 @@ class User(db.Model):
         cascade="all, delete-orphan",
     )
 
+    def to_dict(self):
+        return {
+                    "id": self.uid,
+                    "email": self.email,
+                    "hashed password": self.password_hash,
+                    "is_verified": self.is_verified,
+                    "verification_token": self.verification_token,
+                    "created_at": self.created_at,
+                    "last_active": self.last_active,
+                }
+
     def __repr__(self):
         return f"<User {self.email}>"
-
+    
 
 class Profile(db.Model):
     __tablename__ = "profiles"
 
-    id = db.Column(db.Integer, primary_key=True)
+    pid = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
         db.Integer, db.ForeignKey("users.id"), nullable=False, unique=True
     )
@@ -82,7 +93,7 @@ class Profile(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": self.pid,
             "user_id": self.user_id,
             "name": self.name,
             "age": self.age,
@@ -107,7 +118,7 @@ class Profile(db.Model):
 class Like(db.Model):
     __tablename__ = "likes"
 
-    id = db.Column(db.Integer, primary_key=True)
+    lid = db.Column(db.Integer, primary_key=True)
     from_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     to_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     status = db.Column(db.String(20), default="liked")  # 'liked', 'disliked', 'passed'
@@ -119,7 +130,7 @@ class Like(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": self.lid,
             "from_user_id": self.from_user_id,
             "to_user_id": self.to_user_id,
             "status": self.status,
@@ -130,7 +141,7 @@ class Like(db.Model):
 class Match(db.Model):
     __tablename__ = "matches"
 
-    id = db.Column(db.Integer, primary_key=True)
+    mid = db.Column(db.Integer, primary_key=True)
     user1_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     user2_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=utc_now)
@@ -142,7 +153,7 @@ class Match(db.Model):
 
     def to_dict(self, include_profiles=False):
         result = {
-            "id": self.id,
+            "id": self.mid,
             "user1_id": self.user1_id,
             "user2_id": self.user2_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
@@ -153,7 +164,7 @@ class Match(db.Model):
 class Notification(db.Model):
     __tablename__ = "notifications"
 
-    id = db.Column(db.Integer, primary_key=True)
+    nid = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     type = db.Column(db.String(50), nullable=False)  # 'match', 'like', 'message'
     message = db.Column(db.String(255), nullable=False)
@@ -165,7 +176,7 @@ class Notification(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": self.nid,
             "user_id": self.user_id,
             "type": self.type,
             "message": self.message,
@@ -178,7 +189,7 @@ class Notification(db.Model):
 class Message(db.Model):
     __tablename__ = "messages"
 
-    id = db.Column(db.Integer, primary_key=True)
+    meid = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     content = db.Column(db.Text, nullable=False)
@@ -190,7 +201,7 @@ class Message(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": self.meid,
             "sender_id": self.sender_id,
             "receiver_id": self.receiver_id,
             "content": self.content,
@@ -208,7 +219,7 @@ class Message(db.Model):
 class Bookmark(db.Model):
     __tablename__ = "bookmarks"
 
-    id = db.Column(db.Integer, primary_key=True)
+    bid = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     bookmarked_user_id = db.Column(
         db.Integer, db.ForeignKey("users.id"), nullable=False
@@ -216,7 +227,7 @@ class Bookmark(db.Model):
     created_at = db.Column(db.DateTime, default=utc_now)
 
     user = db.relationship("User", foreign_keys=[user_id])
-    bookmarked_user = db.relationship("User", foreign_keys=[bookmarked_user_id])
+    bookmarks = db.relationship("User", foreign_keys=[bookmarked_user_id])
 
     __table_args__ = (
         db.UniqueConstraint("user_id", "bookmarked_user_id", name="unique_bookmark"),
@@ -224,7 +235,7 @@ class Bookmark(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": self.bid,
             "user_id": self.user_id,
             "bookmarked_user_id": self.bookmarked_user_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
