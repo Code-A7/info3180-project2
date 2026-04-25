@@ -7,7 +7,7 @@ import random
 
 from werkzeug.security import generate_password_hash
 
-from app import create_app, db
+from app import bcrypt, create_app, db
 from app.models import Bookmark, Like, Match, Message, Notification, Profile, User
 
 app = create_app()
@@ -29,7 +29,9 @@ def seed():
         for i in range(1, 11):
             user = User(
                 email=f"user{i}@test.com",
-                password_hash=generate_password_hash("password123"),
+                password_hash=bcrypt.generate_password_hash("password123").decode(
+                    "utf-8"
+                ),
                 is_verified=True,
             )
             db.session.add(user)

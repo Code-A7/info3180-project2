@@ -127,7 +127,7 @@ def get_notifications():
         return jsonify({'error': 'Authentication required'}), 401
     
     notifications = Notification.query.filter_by(
-        user_id=user.id
+        user_id=user.uid
     ).order_by(Notification.created_at.desc()).limit(50).all()
     
     # Add from_user profile info
@@ -153,7 +153,7 @@ def get_unread_count():
         return jsonify({'error': 'Authentication required'}), 401
     
     count = Notification.query.filter_by(
-        user_id=user.id,
+        user_id=user.uid,
         is_read=False
     ).count()
     
@@ -169,7 +169,7 @@ def mark_as_read(notification_id):
     
     notification = Notification.query.filter_by(
         id=notification_id,
-        user_id=user.id
+        user_id=user.uid
     ).first()
     
     if not notification:
@@ -189,7 +189,7 @@ def mark_all_as_read():
         return jsonify({'error': 'Authentication required'}), 401
     
     Notification.query.filter_by(
-        user_id=user.id,
+        user_id=user.uid,
         is_read=False
     ).update({'is_read': True})
     db.session.commit()
