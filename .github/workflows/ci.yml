@@ -52,10 +52,10 @@ jobs:
       - name: Run tests (Group ${{ matrix.test-group }})
         run: |
           case ${{ matrix.test-group }} in
-            1) TEST_PATTERN="test_auth or test_seed or test_utils" ;;
-            2) TEST_PATTERN="test_profile or test_views_utils" ;;
-            3) TEST_PATTERN="test_likes or test_matches or test_notifications" ;;
-            4) TEST_PATTERN="test_messaging or test_search or test_integration" ;;
+            1) TEST_PATTERN="test_auth|test_seed|test_utils" ;;
+            2) TEST_PATTERN="test_profile|test_views_utils|test_upload" ;;
+            3) TEST_PATTERN="test_likes|test_matches|test_notifications" ;;
+            4) TEST_PATTERN="test_messaging|test_search|test_integration" ;;
           esac
           pytest tests/ -v --tb=short -k "$TEST_PATTERN" --timeout=60
 
