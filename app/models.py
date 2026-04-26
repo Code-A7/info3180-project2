@@ -18,7 +18,7 @@ def generate_verification_token():
 class User(db.Model):
     __tablename__ = "users"
 
-    uid = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(128), nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
@@ -47,9 +47,9 @@ class User(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.uid,
+            "id": self.user_id,
             "email": self.email,
-            "hashed password": self.password_hash,
+            "hashed_password": self.password_hash,
             "is_verified": self.is_verified,
             "verification_token": self.verification_token,
             "created_at": self.created_at,
@@ -63,9 +63,9 @@ class User(db.Model):
 class Profile(db.Model):
     __tablename__ = "profiles"
 
-    pid = db.Column(db.Integer, primary_key=True)
+    profile_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer, db.ForeignKey("users.uid"), nullable=False, unique=True
+        db.Integer, db.ForeignKey("users.user_id"), nullable=False, unique=True
     )
 
     name = db.Column(db.String(100), nullable=False)
@@ -93,7 +93,7 @@ class Profile(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.pid,
+            "id": self.profile_id,
             "user_id": self.user_id,
             "name": self.name,
             "age": self.age,
@@ -118,9 +118,9 @@ class Profile(db.Model):
 class Like(db.Model):
     __tablename__ = "likes"
 
-    lid = db.Column(db.Integer, primary_key=True)
-    from_user_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
-    to_user_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
+    like_id = db.Column(db.Integer, primary_key=True)
+    from_user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+    to_user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     status = db.Column(db.String(20), default="liked")  # 'liked', 'disliked', 'passed'
     created_at = db.Column(db.DateTime, default=utc_now)
 
@@ -130,7 +130,7 @@ class Like(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.lid,
+            "id": self.like_id,
             "from_user_id": self.from_user_id,
             "to_user_id": self.to_user_id,
             "status": self.status,
@@ -141,9 +141,9 @@ class Like(db.Model):
 class Match(db.Model):
     __tablename__ = "matches"
 
-    mid = db.Column(db.Integer, primary_key=True)
-    user1_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
-    user2_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
+    match_id = db.Column(db.Integer, primary_key=True)
+    user1_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+    user2_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     created_at = db.Column(db.DateTime, default=utc_now)
 
     user1 = db.relationship("User", foreign_keys=[user1_id])
@@ -153,7 +153,7 @@ class Match(db.Model):
 
     def to_dict(self, include_profiles=False):
         result = {
-            "id": self.mid,
+            "id": self.match_id,
             "user1_id": self.user1_id,
             "user2_id": self.user2_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
@@ -164,11 +164,11 @@ class Match(db.Model):
 class Notification(db.Model):
     __tablename__ = "notifications"
 
-    nid = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
+    notification_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     type = db.Column(db.String(50), nullable=False)  # 'match', 'like', 'message'
     message = db.Column(db.String(255), nullable=False)
-    from_user_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=True)
+    from_user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=utc_now)
 
@@ -176,7 +176,7 @@ class Notification(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.nid,
+            "id": self.notification_id,
             "user_id": self.user_id,
             "type": self.type,
             "message": self.message,
@@ -189,9 +189,9 @@ class Notification(db.Model):
 class Message(db.Model):
     __tablename__ = "messages"
 
-    meid = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
-    receiver_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
+    message_id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=utc_now)
     read_at = db.Column(db.DateTime, nullable=True)
@@ -201,7 +201,7 @@ class Message(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.meid,
+            "id": self.message_id,
             "sender_id": self.sender_id,
             "receiver_id": self.receiver_id,
             "content": self.content,
@@ -219,10 +219,10 @@ class Message(db.Model):
 class Bookmark(db.Model):
     __tablename__ = "bookmark"
 
-    bid = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
+    bookmark_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     bookmarked_user_id = db.Column(
-        db.Integer, db.ForeignKey("users.uid"), nullable=False
+        db.Integer, db.ForeignKey("users.user_id"), nullable=False
     )
     created_at = db.Column(db.DateTime, default=utc_now)
 
@@ -235,7 +235,7 @@ class Bookmark(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.bid,
+            "id": self.bookmark_id,
             "user_id": self.user_id,
             "bookmarked_user_id": self.bookmarked_user_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,

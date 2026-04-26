@@ -115,25 +115,25 @@ def get_potential_matches():
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    profile = Profile.query.filter_by(user_id=user.uid).first()
+    profile = Profile.query.filter_by(user_id=user.user_id).first()
     if not profile:
         return jsonify({"error": "Create a profile first"}), 400
 
     # Get IDs of users we've already interacted with
     interacted_ids = (
-        db.session.query(Like.from_user_id).filter(Like.from_user_id == user.uid).all()
+        db.session.query(Like.from_user_id).filter(Like.from_user_id == user.user_id).all()
     )
     interacted_ids = [i[0] for i in interacted_ids]
 
     # Get existing matches
     match_ids = []
-    as_user1 = db.session.query(Match.user2_id).filter(Match.user1_id == user.uid).all()
-    as_user2 = db.session.query(Match.user1_id).filter(Match.user2_id == user.uid).all()
+    as_user1 = db.session.query(Match.user2_id).filter(Match.user1_id == user.user_id).all()
+    as_user2 = db.session.query(Match.user1_id).filter(Match.user2_id == user.user_id).all()
     match_ids = [m[0] for m in as_user1] + [m[0] for m in as_user2]
 
     # Get potential matches (public profiles, not interacted, not matched)
     query = Profile.query.filter(
-        Profile.user_id != user.uid,
+        Profile.user_id != user.user_id,
         Profile.visibility == True,
         ~Profile.user_id.in_(interacted_ids) if interacted_ids else True,
         ~Profile.user_id.in_(match_ids) if match_ids else True,
@@ -175,20 +175,20 @@ def get_matches():
 
     # Get matches where user is either user1 or user2
     matches = (
-        Match.query.filter((Match.user1_id == user.uid) | (Match.user2_id == user.uid))
+        Match.query.filter((Match.user1_id == user.user_id) | (Match.user2_id == user.user_id))
         .order_by(Match.created_at.desc())
         .all()
     )
 
     result = []
     for match in matches:
-        other_user_id = match.user2_id if match.user1_id == user.uid else match.user1_id
+        other_user_id = match.user2_id if match.user1_id == user.user_id else match.user1_id
         other_profile = Profile.query.filter_by(user_id=other_user_id).first()
 
         if other_profile:
             result.append(
                 {
-                    "match_id": match.id,
+                    "match_id": match.match_id,
                     "profile": other_profile.to_dict(),
                     "matched_at": match.created_at.isoformat()
                     if match.created_at
@@ -212,32 +212,32 @@ def like_user(to_user_id):
         return jsonify({"error": "User not found"}), 404
 
     # Check if already liked
-    existing = Like.query.filter_by(from_user_id=user.uid, to_user_id=to_user_id).first()
+    existing = Like.query.filter_by(from_user_id=user.user_id, to_user_id=to_user_id).first()
 
     if existing:
         existing.status = "liked"
     else:
-        like = Like(from_user_id=user.uid, to_user_id=to_user_id, status="liked")
+        like = Like(from_user_id=user.user_id, to_user_id=to_user_id, status="liked")
         db.session.add(like)
 
     # Check for mutual like
-    is_mutual = check_mutual_like(user.uid, to_user_id)
+    is_mutual = check_mutual_like(user.user_id, to_user_id)
 
     if is_mutual:
         
         # Create match
-        match = create_match(user.uid, to_user_id)
+        match = create_match(user.user_id, to_user_id)
 
         # Create notifications for both
-        from_profile = Profile.query.filter_by(user_id=user.uid).first()
+        from_profile = Profile.query.filter_by(user_id=user.user_id).first()
         create_notification(
             to_user_id,
             "match",
             f"It's a match! You and {from_profile.name} liked each other!",
-            from_user_id=user.uid,
+            from_user_id=user.user_id,
         )
         create_notification(
-            user.uid,
+            user.user_id,
             "match",
             f"It's a match! You and {to_profile.name} liked each other!",
             from_user_id=to_user_id,
@@ -250,10 +250,10 @@ def like_user(to_user_id):
             socket_emit(
                 to_user_id,
                 "new_match",
-                {"user_id": user.uid, "profile": from_profile.to_dict()},
+                {"user_id": user.user_id, "profile": from_profile.to_dict()},
             )
             socket_emit(
-                user.uid,
+                user.user_id,
                 "new_match",
                 {"user_id": to_user_id, "profile": to_profile.to_dict()},
             )
@@ -267,9 +267,9 @@ def like_user(to_user_id):
         ), 200
     else:
         # Just notify the liked user
-        from_profile = Profile.query.filter_by(user_id=user.uid).first()
+        from_profile = Profile.query.filter_by(user_id=user.user_id).first()
         create_notification(
-            to_user_id, "like", f"{from_profile.name} liked you!", from_user_id=user.uid
+            to_user_id, "like", f"{from_profile.name} liked you!", from_user_id=user.user_id
         )
 
         # Emit like event via WebSocket
@@ -277,7 +277,7 @@ def like_user(to_user_id):
             socket_emit(
                 to_user_id,
                 "new_like",
-                {"user_id": user.uid, "profile": from_profile.to_dict()},
+                {"user_id": user.user_id, "profile": from_profile.to_dict()},
             )
 
         db.session.commit()
@@ -292,12 +292,12 @@ def dislike_user(to_user_id):
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    existing = Like.query.filter_by(from_user_id=user.uid, to_user_id=to_user_id).first()
+    existing = Like.query.filter_by(from_user_id=user.user_id, to_user_id=to_user_id).first()
 
     if existing:
         existing.status = "disliked"
     else:
-        like = Like(from_user_id=user.uid, to_user_id=to_user_id, status="disliked")
+        like = Like(from_user_id=user.user_id, to_user_id=to_user_id, status="disliked")
         db.session.add(like)
 
     db.session.commit()
@@ -312,12 +312,12 @@ def pass_user(to_user_id):
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    existing = Like.query.filter_by(from_user_id=user.uid, to_user_id=to_user_id).first()
+    existing = Like.query.filter_by(from_user_id=user.user_id, to_user_id=to_user_id).first()
 
     if existing:
         existing.status = "passed"
     else:
-        like = Like(from_user_id=user.uid, to_user_id=to_user_id, status="passed")
+        like = Like(from_user_id=user.user_id, to_user_id=to_user_id, status="passed")
         db.session.add(like)
 
     db.session.commit()
@@ -332,7 +332,7 @@ def get_match_score(to_user_id):
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    current_profile = Profile.query.filter_by(user_id=user.uid).first()
+    current_profile = Profile.query.filter_by(user_id=user.user_id).first()
     if not current_profile:
         return jsonify({"error": "Create a profile first"}), 400
 
@@ -352,7 +352,7 @@ def search_profiles():
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    profile = Profile.query.filter_by(user_id=user.uid).first()
+    profile = Profile.query.filter_by(user_id=user.user_id).first()
     if not profile:
         return jsonify({"error": "Create a profile first"}), 400
 
@@ -366,7 +366,7 @@ def search_profiles():
     occupation = data.get("occupation", "").strip().lower()
     sort_by = data.get("sort_by", "newest")
 
-    query = Profile.query.filter(Profile.user_id != user.uid, Profile.visibility == True)
+    query = Profile.query.filter(Profile.user_id != user.user_id, Profile.visibility == True)
 
     if age_min:
         query = query.filter(Profile.age >= age_min)
@@ -401,7 +401,7 @@ def search_profiles():
         profile_data["match_details"] = match_result["details"]
 
         bookmark = Bookmark.query.filter_by(
-            user_id=user.uid, bookmarked_user_id=p.user_id
+            user_id=user.user_id, bookmarked_user_id=p.user_id
         ).first()
         profile_data["is_bookmarked"] = bookmark is not None
 
@@ -420,12 +420,12 @@ def get_bookmarks():
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    current_profile = Profile.query.filter_by(user_id=user.uid).first()
+    current_profile = Profile.query.filter_by(user_id=user.user_id).first()
     if not current_profile:
         return jsonify({"error": "Create a profile first"}), 400
 
     bookmarks = (
-        Bookmark.query.filter_by(user_id=user.uid)
+        Bookmark.query.filter_by(user_id=user.user_id)
         .order_by(Bookmark.created_at.desc())
         .all()
     )
@@ -453,7 +453,7 @@ def add_bookmark(to_user_id):
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    if user.uid == to_user_id:
+    if user.user_id == to_user_id:
         return jsonify({"error": "Cannot bookmark yourself"}), 400
 
     target_profile = Profile.query.filter_by(user_id=to_user_id).first()
@@ -461,13 +461,13 @@ def add_bookmark(to_user_id):
         return jsonify({"error": "User not found"}), 404
 
     existing = Bookmark.query.filter_by(
-        user_id=user.uid, bookmarked_user_id=to_user_id
+        user_id=user.user_id, bookmarked_user_id=to_user_id
     ).first()
 
     if existing:
         return jsonify({"message": "Already bookmarked"}), 200
 
-    bookmark = Bookmark(user_id=user.uid, bookmarked_user_id=to_user_id)
+    bookmark = Bookmark(user_id=user.user_id, bookmarked_user_id=to_user_id)
     db.session.add(bookmark)
     db.session.commit()
 
@@ -482,7 +482,7 @@ def remove_bookmark(to_user_id):
         return jsonify({"error": "Authentication required"}), 401
 
     bookmark = Bookmark.query.filter_by(
-        user_id=user.uid, bookmarked_user_id=to_user_id
+        user_id=user.user_id, bookmarked_user_id=to_user_id
     ).first()
 
     if not bookmark:

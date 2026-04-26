@@ -62,17 +62,27 @@ def send_email(to_email, subject, body):
 
 
 
-def email_notification(UserID, Notification):
-    # email_notification(User, Admire, Notification):
+def email_notification(UserID, notification_type):
+    # email_notification(User, Admire, notification_type):
     link = 'http://localhost:8080'
-    heading_noti={'like':f"You have a secret admire.", 'match':"You have a new match.", 'matching':"We might have found someone you might like."}
-    body_noti={'like':f"You have a new secret admire. Come and find out who👀👀👀. 👉{link}", 'match':"You have a new match.  Come and find out who👀👀👀. 👉{link}", 'matching':"We might have found someone you might like. Come and find out who👀👀👀. 👉{link}", 'message':"Someone messaged you. Come and find out who👀👀👀. 👉{link}"}
+    heading_noti={
+        'like': "You have a secret admire.", 
+        'match': "You have a new match.", 
+        'matching': "We might have found someone you might like.",
+        'message': "You have a new message."
+    }
+    body_noti={
+        'like': "You have a new secret admire. Come and find out who👀👀👀. 👉" + link, 
+        'match': "You have a new match. Come and find out who👀👀👀. 👉" + link, 
+        'matching': "We might have found someone you might like. Come and find out who👀👀👀. 👉" + link,
+        'message': "Someone messaged you. Come and find out who👀👀👀. 👉" + link
+    }
     # get email from database
     # to_email=
-    to_email = db.session.query(User.email).filter(UserID == User.id).distinct()
+    to_email = db.session.query(User.email).filter(User.user_id == UserID).scalar()
     
-    heading=heading_noti[Notification]
-    body=body_noti[Notification]
+    heading = heading_noti.get(notification_type, "You have a new notification")
+    body = body_noti.get(notification_type, "Check your notifications")
     send_email(to_email, heading, body)
 
 
@@ -127,7 +137,7 @@ def get_notifications():
         return jsonify({'error': 'Authentication required'}), 401
     
     notifications = Notification.query.filter_by(
-        user_id=user.uid
+        user_id=user.user_id
     ).order_by(Notification.created_at.desc()).limit(50).all()
     
     # Add from_user profile info
@@ -153,7 +163,7 @@ def get_unread_count():
         return jsonify({'error': 'Authentication required'}), 401
     
     count = Notification.query.filter_by(
-        user_id=user.uid,
+        user_id=user.user_id,
         is_read=False
     ).count()
     
@@ -168,8 +178,8 @@ def mark_as_read(notification_id):
         return jsonify({'error': 'Authentication required'}), 401
     
     notification = Notification.query.filter_by(
-        id=notification_id,
-        user_id=user.uid
+        notification_id=notification_id,
+        user_id=user.user_id
     ).first()
     
     if not notification:
@@ -189,7 +199,7 @@ def mark_all_as_read():
         return jsonify({'error': 'Authentication required'}), 401
     
     Notification.query.filter_by(
-        user_id=user.uid,
+        user_id=user.user_id,
         is_read=False
     ).update({'is_read': True})
     db.session.commit()

@@ -33,7 +33,7 @@ def rate_limit(max_requests=5, window_seconds=300):
             # Get client identifier (IP or user_id)
             client_id = request.remote_addr
             if hasattr(g, "user") and g.user:
-                client_id = f"user_{g.user.uid}"
+                client_id = f"user_{g.user.user_id}"
 
             current_time = time.time()
             window_key = (
@@ -227,7 +227,7 @@ def register():
     return jsonify(
         {
             "message": "Registration successful. Please check your email to verify your account.",
-            "user_id": user.uid,
+            "user_id": user.user_id,
         }
     ), 201
 
@@ -281,14 +281,14 @@ def login():
             }
         ), 401
 
-    token = generate_token(user.uid)
+    token = generate_token(user.user_id)
 
     return jsonify(
         {
             "message": "Login successful",
             "token": token,
             "user": {
-                "id": user.uid,
+                "id": user.user_id,
                 "email": user.email,
                 "is_verified": user.is_verified,
                 "has_profile": user.profile is not None,
@@ -392,7 +392,7 @@ def forgot_password():
 
     # Store token hash in database (in production, create a PasswordResetToken model)
     # For now, we'll encode it in JWT
-    reset_jwt = generate_token(user.uid, token_type="reset", expires_days=1)
+    reset_jwt = generate_token(user.user_id, token_type="reset", expires_days=1)
 
     reset_url = f"http://localhost:5173/reset-password?token={reset_jwt}"
 
@@ -485,13 +485,13 @@ def refresh_token():
         return jsonify({"error": "Email not verified"}), 401
 
     # Generate new token
-    new_token = generate_token(user.uid)
+    new_token = generate_token(user.user_id)
 
     return jsonify(
         {
             "token": new_token,
             "user": {
-                "id": user.uid,
+                "id": user.user_id,
                 "email": user.email,
                 "is_verified": user.is_verified,
                 "has_profile": user.profile is not None,
@@ -514,7 +514,7 @@ def get_current_user():
 
     return jsonify(
         {
-            "id": user.uid,
+            "id": user.user_id,
             "email": user.email,
             "is_verified": user.is_verified,
             "has_profile": user.profile is not None,
@@ -530,7 +530,7 @@ def get_profile():
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    profile = Profile.query.filter_by(user_id=user.uid).first()
+    profile = Profile.query.filter_by(user_id=user.user_id).first()
 
     if not profile:
         return jsonify({"error": "Profile not found"}), 404
@@ -544,7 +544,7 @@ def create_profile():
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    existing = Profile.query.filter_by(user_id=user.uid).first()
+    existing = Profile.query.filter_by(user_id=user.user_id).first()
     if existing:
         return jsonify({"error": "Profile already exists. Use PUT to update."}), 400
 
@@ -562,7 +562,7 @@ def create_profile():
         ), 400
 
     profile = Profile(
-        user_id=user.uid,
+        user_id=user.user_id,
         name=form.name.data,
         age=form.age.data,
         bio=form.bio.data,
@@ -586,7 +586,7 @@ def update_profile():
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    profile = Profile.query.filter_by(user_id=user.uid).first()
+    profile = Profile.query.filter_by(user_id=user.user_id).first()
 
     if not profile:
         return jsonify({"error": "Profile not found. Create one first."}), 404
@@ -594,25 +594,35 @@ def update_profile():
     data = request.get_json() or {}
     data["interests"] = data.get("interests", [])
 
-    form = ProfileForm(data=data)
-    if not form.validate():
-        return jsonify({"errors": form.errors}), 400
-
-    interests_list = [i.strip() for i in form.interests.data.split(",") if i.strip()]
-    if len(interests_list) < 3:
-        return jsonify(
-            {"errors": {"interests": ["Please add at least 3 interests"]}}
-        ), 400
-
-    profile.name = form.name.data
-    profile.age = form.age.data
-    profile.bio = form.bio.data
-    profile.interests = interests_list
-    profile.gender = form.gender.data
-    profile.gender_preference = form.gender_preference.data
-    profile.relationship_goal = form.relationship_goal.data
-    profile.occupation = form.occupation.data
-    profile.visibility = form.visibility.data
+    # Handle partial updates - only validate provided fields
+    errors = {}
+    
+    if 'name' in data and data['name']:
+        profile.name = data['name']
+    if 'age' in data:
+        profile.age = data['age']
+    if 'bio' in data:
+        profile.bio = data['bio']
+    if 'interests' in data:
+        interests_list = [i.strip() for i in data['interests'] if isinstance(data['interests'], list) or (isinstance(data['interests'], str) and i.strip())]
+        if data['interests'] and isinstance(data['interests'], str):
+            interests_list = [i.strip() for i in data['interests'].split(",") if i.strip()]
+        if len(interests_list) < 3 and interests_list:
+            return jsonify(
+                {"errors": {"interests": ["Please add at least 3 interests"]}}
+            ), 400
+        if interests_list:
+            profile.interests = interests_list
+    if 'gender' in data and data['gender']:
+        profile.gender = data['gender']
+    if 'gender_preference' in data and data['gender_preference']:
+        profile.gender_preference = data['gender_preference']
+    if 'relationship_goal' in data and data['relationship_goal']:
+        profile.relationship_goal = data['relationship_goal']
+    if 'occupation' in data:
+        profile.occupation = data['occupation'] if data['occupation'] else None
+    if 'visibility' in data:
+        profile.visibility = data['visibility']
 
     db.session.commit()
 
@@ -625,7 +635,7 @@ def upload_picture():
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    profile = Profile.query.filter_by(user_id=user.uid).first()
+    profile = Profile.query.filter_by(user_id=user.user_id).first()
 
     if not profile:
         return jsonify({"error": "Create a profile first"}), 400
@@ -639,7 +649,7 @@ def upload_picture():
         return jsonify({"error": "No file selected"}), 400
 
     if file and allowed_file(file.filename):
-        filename = secure_filename(f"user_{user.uid}_{file.filename}")
+        filename = secure_filename(f"user_{user.user_id}_{file.filename}")
         upload_folder = current_app.config.get("UPLOAD_FOLDER", "./uploads")
         if not os.path.isabs(upload_folder):
             upload_folder = os.path.join(
@@ -668,7 +678,7 @@ def view_other_profile(user_id):
 
     if not profile.visibility:
         user = get_user_from_token()
-        if not user or user.uid != user_id:
+        if not user or user.user_id != user_id:
             return jsonify({"error": "This profile is private"}), 403
 
     return jsonify(profile.to_dict()), 200

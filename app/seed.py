@@ -62,7 +62,7 @@ def seed():
 
         for i, user in enumerate(users):
             profile = Profile(
-                user_id=user.uid,
+                user_id=user.user_id,
                 name=names[i],
                 age=random.randint(18, 40),
                 bio=f"Hi, I'm {names[i]}!",
@@ -83,15 +83,15 @@ def seed():
         likes = []
 
         for user in users:
-            others = [u for u in users if u.uid != user.uid]
+            others = [u for u in users if u.user_id != user.user_id]
             liked_users = random.sample(others, k=3)
 
             for target in liked_users:
                 like = Like(
-                    from_user_id=user.uid, to_user_id=target.uid, status="liked"
+                    from_user_id=user.user_id, to_user_id=target.user_id, status="liked"
                 )
                 db.session.add(like)
-                likes.append((user.uid, target.uid))
+                likes.append((user.user_id, target.user_id))
 
         db.session.commit()
 
@@ -148,10 +148,10 @@ def seed():
         # 7. CREATE BOOKMARKS
         # ----------------------
         for user in users:
-            others = [u for u in users if u.uid != user.uid]
+            others = [u for u in users if u.user_id != user.user_id]
             bookmarked = random.choice(others)
 
-            bookmark = Bookmark(user_id=user.uid, bookmarked_user_id=bookmarked.uid)
+            bookmark = Bookmark(user_id=user.user_id, bookmarked_user_id=bookmarked.user_id)
             db.session.add(bookmark)
 
         db.session.commit()

@@ -1,26 +1,23 @@
-import pytest
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app import create_app, db
+from app import db, bcrypt
 from app.models import User, Profile
 
 
-def create_user(app, email, is_verified=True):
-    """Create a test user."""
-    from app import bcrypt
-    
+def create_user(app, email, is_verified=True, password='TestPass123!'):
+    """Create a test user with the given email and verification status."""
     with app.app_context():
         user = User(
             email=email,
-            password_hash=bcrypt.generate_password_hash('TestPass123!').decode('utf-8'),
+            password_hash=bcrypt.generate_password_hash(password).decode('utf-8'),
             is_verified=is_verified
         )
         db.session.add(user)
         db.session.commit()
         db.session.refresh(user)
-        return user.id
+        return user.user_id
 
 
 def create_profile(app, user_id, **kwargs):
@@ -28,9 +25,10 @@ def create_profile(app, user_id, **kwargs):
     with app.app_context():
         defaults = {
             'user_id': user_id,
-            'name': f'User {user_id}',
-            'age': 25,
-            'bio': 'Test bio',
+            'name': kwargs.get('name', f'User {user_id}'),
+            'age': kwargs.get('age', 25),
+            'bio': kwargs.get('bio', 'Test bio'),
+            'preferred_age_min': kwargs.get('preferred_age_min', 18),
             'preferred_age_min': kwargs.get('preferred_age_min', 18),
             'preferred_age_max': kwargs.get('preferred_age_max', 50),
             'interests': kwargs.get('interests', ['hiking', 'reading', 'music']),
@@ -48,89 +46,54 @@ def create_profile(app, user_id, **kwargs):
         return profile
 
 
-def get_token(client, email):
+def get_auth_token(client, email, password='TestPass123!'):
     """Get authentication token for a user."""
     response = client.post('/api/auth/login', json={
         'email': email,
-        'password': 'TestPass123!'
+        'password': password
     })
     if response.status_code != 200:
         raise ValueError(f"Login failed for {email}: {response.json}")
     return response.json['token']
 
 
-@pytest.fixture
-def app():
-    app = create_app()
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['MAILTRAP_SMTP_USER'] = None
+def create_test_user(client, app, email, password='TestPass123!', name='Test User', age=25, gender='male', interests=None, gender_preference='all', relationship_goal='dating', is_verified=True):
+    """Create a complete test user with profile and return user_id."""
+    if interests is None:
+        interests = ['music', 'travel']
+    
+    response = client.post('/api/auth/register', json={
+        'email': email,
+        'password': password,
+        'confirm_password': password
+    })
     
     with app.app_context():
-        db.create_all()
-        yield app
-        db.drop_all()
+        user = db.session.query(User).filter_by(email=email).first()
+        user.is_verified = is_verified
+        db.session.commit()
+        user_id = user.user_id
+        
+        profile = Profile(
+            user_id=user_id,
+            name=name,
+            age=age,
+            bio='Test bio',
+            gender=gender,
+            gender_preference=gender_preference,
+            interests=interests,
+            relationship_goal=relationship_goal
+        )
+        db.session.add(profile)
+        db.session.commit()
+    
+    return user_id
 
 
-@pytest.fixture
-def client(app):
-    return app.test_client()
-
-
-@pytest.fixture
-def runner(app):
-    return app.test_cli_runner()
-
-
-@pytest.fixture
-def user1(app):
-    """Create first test user."""
-    return create_user(app, 'user1@test.com')
-
-
-@pytest.fixture
-def user2(app):
-    """Create second test user."""
-    return create_user(app, 'user2@test.com')
-
-
-@pytest.fixture
-def user3(app):
-    """Create third test user."""
-    return create_user(app, 'user3@test.com')
-
-
-@pytest.fixture
-def profile1(app, user1):
-    """Create profile for user1."""
-    return create_profile(app, user1, 
-        name='John',
-        age=25,
-        interests=['hiking', 'reading', 'music'],
-        gender='male',
-        gender_preference='female',
-        relationship_goal='serious_relationship'
-    )
-
-
-@pytest.fixture
-def profile2(app, user2):
-    """Create profile for user2."""
-    return create_profile(app, user2,
-        name='Jane',
-        age=28,
-        interests=['hiking', 'cooking', 'travel'],
-        gender='female',
-        gender_preference='male',
-        relationship_goal='serious_relationship'
-    )
-
-
-@pytest.fixture
-def profile3(app, user3):
-    """Create profile for user3 - incompatible."""
-    return create_profile(app, user3,
-        name='Bob',
+def create_incompatible_profile(app, user_id):
+    """Create an incompatible profile for testing filters."""
+    return create_profile(app, user_id,
+        name='Incompatible',
         age=55,
         interests=['gaming'],
         gender='male',
@@ -139,19 +102,57 @@ def profile3(app, user3):
     )
 
 
-@pytest.fixture
-def token1(client, user1):
-    """Get token for user1."""
-    return get_token(client, 'user1@test.com')
+def get_unverified_user(client, app, email='unverified@example.com'):
+    """Create an unverified user and return their credentials."""
+    client.post('/api/auth/register', json={
+        'email': email,
+        'password': 'TestPass123!',
+        'confirm_password': 'TestPass123!'
+    })
+    
+    with app.app_context():
+        user = db.session.query(User).filter_by(email=email).first()
+        user_id = user.user_id
+    
+    return {
+        'user_id': user_id,
+        'email': email
+    }
 
 
-@pytest.fixture
-def token2(client, user2):
-    """Get token for user2."""
-    return get_token(client, 'user2@test.com')
+def create_mutual_match(client, app, user1_id, user2_id, token1):
+    """Create a mutual match between two users. Returns the match object."""
+    from app.models import Match
+    
+    # User1 likes User2
+    client.post(f'/api/matches/like/{user2_id}',
+                headers={'Authorization': f'Bearer {token1}'})
+    
+    # Get token for user2
+    with app.app_context():
+        user2 = db.session.query(User).filter_by(email=User.query.get(user2_id).email).first()
+    
+    response = client.post('/api/auth/login', json={
+        'email': user2.email,
+        'password': 'TestPass123!'
+    })
+    token2 = response.json['token']
+    
+    # User2 likes User1 (mutual match)
+    client.post(f'/api/matches/like/{user1_id}',
+                headers={'Authorization': f'Bearer {token2}'})
+    
+    with app.app_context():
+        match = Match.query.filter(
+            ((Match.user1_id == user1_id) & (Match.user2_id == user2_id)) |
+            ((Match.user1_id == user2_id) & (Match.user2_id == user1_id))
+        ).first()
+        return match
 
 
-@pytest.fixture
-def token3(client, user3):
-    """Get token for user3."""
-    return get_token(client, 'user3@test.com')
+def verify_user(app, email):
+    """Verify a user's email."""
+    with app.app_context():
+        user = db.session.query(User).filter_by(email=email).first()
+        user.is_verified = True
+        db.session.commit()

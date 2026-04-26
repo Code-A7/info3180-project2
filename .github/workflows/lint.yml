@@ -1,0 +1,142 @@
+name: Lint
+
+on:
+  push:
+    branches: [main, develop, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ruff:
+    name: Ruff Linter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Ruff
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
+      - name: Run Ruff
+        run: |
+          ruff check . --output-format=github
+
+  black:
+    name: Black Formatter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Black
+        run: |
+          python -m pip install --upgrade pip
+          pip install black
+
+      - name: Run Black check
+        run: |
+          black --check --diff .
+
+  mypy:
+    name: MyPy Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install MyPy
+        run: |
+          python -m pip install --upgrade pip
+          pip install mypy types-requests types-passlib
+
+      - name: Run MyPy
+        run: |
+          mypy app tests --ignore-missing-imports --ignore-missing-imports || true
+
+  eslint:
+    name: ESLint (Frontend)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Run ESLint
+        run: |
+          npm run lint || true
+
+  prettier:
+    name: Prettier (Frontend)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Run Prettier check
+        run: |
+          npx prettier --check "src/**/*.{js,vue,css}" || true
+
+  commitlint:
+    name: Commit Message Lint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Commitlint
+        run: |
+          npm install -g @commitlint/cli @commitlint/config-conventional
+
+      - name: Lint commits
+        run: |
+          commitlint --from=${{ github.event.pull_request.base.sha }} --to=${{ github.event.pull_request.head.sha }} || true
+
+  combined-status:
+    name: Combined Status
+    runs-on: ubuntu-latest
+    needs: [ruff, black, mypy, eslint, prettier]
+    if: always()
+    
+    steps:
+      - name: Check status
+        run: |
+          echo "All linting checks completed!"
