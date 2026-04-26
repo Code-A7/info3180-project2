@@ -16,13 +16,13 @@ A complete guide to using DriftDater dating application.
 4. Click **Create Account**
 5. Check your email for the verification link
 
-*[SCREENSHOT: registration-form.png]*
+*[SCREENSHOT: images/registration-form.png]*
 
 ### Email Verification
 
 After registering, you'll receive an email with a verification link. Click the link to verify your email address. Without verification, you won't be able to fully use the app.
 
-*[SCREENSHOT: verification-email.png]*
+*[SCREENSHOT: images/verification-email.png]*
 
 ### Logging In
 
@@ -31,7 +31,7 @@ After registering, you'll receive an email with a verification link. Click the l
 3. Click **Login**
 4. You'll be redirected to the browse page
 
-*[SCREENSHOT: login-form.png]*
+*[SCREENSHOT: images/login-form.png]*
 
 ### Logging Out
 
@@ -58,7 +58,7 @@ Your profile is what other users see. Make it stand out!
 | Occupation | Your job | No |
 | Relationship Goals | What you're looking for | Yes |
 
-*[SCREENSHOT: profile-form.png]*
+*[SCREENSHOT: images/profile-form.png]*
 
 ### Setting Age Preferences
 
@@ -67,7 +67,7 @@ Set the age range of matches you're interested in:
 - **Minimum Age:** 18
 - **Maximum Age:** 99
 
-*[SCREENSHOT: age-preferences.png]*
+*[SCREENSHOT: images/age-preferences.png]*
 
 ### Uploading a Profile Picture
 
@@ -76,7 +76,7 @@ Set the age range of matches you're interested in:
 3. Select an image from your device
 4. The image will be cropped to fit
 
-*[SCREENSHOT: upload-picture.png]*
+*[SCREENSHOT: images/upload-picture.png]*
 
 ### Profile Visibility
 
@@ -107,7 +107,7 @@ Select your preferred visibility in profile settings.
    - **Dislike** - Skip the profile
    - **Pass** - Hide temporarily
 
-*[SCREENSHOT: browse-page.png]*
+*[SCREENSHOT: images/browse-page.png]*
 
 ### Understanding the Matching Algorithm
 
@@ -122,7 +122,7 @@ DriftDater uses a scoring system (75 points max) to determine compatibility:
 
 **Minimum score: 50 points** to appear in your potential matches.
 
-*[SCREENSHOT: match-score-explanation.png]*
+*[SCREENSHOT: images/match-score-explanation.png]*
 
 ### Mutual Matches
 
@@ -132,7 +132,7 @@ When you like someone and they like you back, it's a mutual match!
 2. You'll see all mutual matches sorted by most recent
 3. Click on a match to start messaging
 
-*[SCREENSHOT: mutual-matches.png]*
+*[SCREENSHOT: images/mutual-matches.png]*
 
 ### Filtering Matches
 
@@ -155,7 +155,7 @@ Only mutual matches can message each other.
 3. Type your message in the chat box
 4. Press Enter or click **Send**
 
-*[SCREENSHOT: chat-window.png]*
+*[SCREENSHOT: images/chat-window.png]*
 
 ### Typing Indicators
 
@@ -164,7 +164,7 @@ When your match is typing, you'll see:
 
 This shows they're currently composing a message.
 
-*[SCREENSHOT: typing-indicator.png]*
+*[SCREENSHOT: images/typing-indicator.png]*
 
 ### Read Receipts
 
@@ -175,7 +175,7 @@ Message status indicators:
 | ✓ | Message sent |
 | ✓✓ | Message read |
 
-*[SCREENSHOT: read-receipts.png]*
+*[SCREENSHOT: images/read-receipts.png]*
 
 ### Message Limits
 
@@ -189,7 +189,7 @@ Message status indicators:
 3. Unread message count shown on each conversation
 4. Most recent conversation appears at top
 
-*[SCREENSHOT: conversations-list.png]*
+*[SCREENSHOT: images/conversations-list.png]*
 
 ---
 
@@ -216,7 +216,7 @@ Message status indicators:
 
 4. Click **Search** to see results
 
-*[SCREENSHOT: search-page.png]*
+*[SCREENSHOT: images/search-page.png]*
 
 ### Filtering Applied Matches
 
@@ -230,7 +230,7 @@ Save profiles you like for later:
 2. Click the **bookmark icon** (usually a flag or star)
 3. Go to **Favorites** to view all bookmarked profiles
 
-*[SCREENSHOT: bookmark-button.png]*
+*[SCREENSHOT: images/bookmark-button.png]*
 
 ### Managing Favorites
 
@@ -239,7 +239,7 @@ Save profiles you like for later:
 3. Click to view full profile
 4. Remove bookmarks with the same bookmark icon
 
-*[SCREENSHOT: favorites-page.png]*
+*[SCREENSHOT: images/favorites-page.png]*
 
 ---
 
@@ -253,7 +253,7 @@ DriftDater sends instant notifications via WebSocket:
 - **New Like** - When someone likes your profile
 - **New Message** - When you receive a message
 
-*[SCREENSHOT: notifications-panel.png]*
+*[SCREENSHOT: images/notifications-panel.png]*
 
 ### Notification Types
 
@@ -270,7 +270,7 @@ DriftDater sends instant notifications via WebSocket:
 3. Mark individual notifications as read
 4. **Mark All Read** to clear all
 
-*[SCREENSHOT: notification-dropdown.png]*
+*[SCREENSHOT: images/notification-dropdown.png]*
 
 ### Unread Count
 

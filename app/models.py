@@ -62,6 +62,11 @@ class User(db.Model):
 
 class Profile(db.Model):
     __tablename__ = "profiles"
+    __table_args__ = (
+        db.Index("ix_profiles_visibility_created_at", "visibility", "created_at"),
+        db.Index("ix_profiles_gender_age", "gender", "age"),
+        db.Index("ix_profiles_relationship_goal", "relationship_goal"),
+    )
 
     profile_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
@@ -88,7 +93,7 @@ class Profile(db.Model):
     relationship_goal = db.Column(db.String(50))
     occupation = db.Column(db.String(100))
 
-    created_at = db.Column(db.DateTime, default=utc_now)
+    created_at = db.Column(db.DateTime, default=utc_now, index=True)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     def to_dict(self):
@@ -122,10 +127,11 @@ class Like(db.Model):
     from_user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     to_user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     status = db.Column(db.String(20), default="liked")  # 'liked', 'disliked', 'passed'
-    created_at = db.Column(db.DateTime, default=utc_now)
+    created_at = db.Column(db.DateTime, default=utc_now, index=True)
 
     __table_args__ = (
         db.UniqueConstraint("from_user_id", "to_user_id", name="unique_like"),
+        db.Index("ix_likes_to_user_status", "to_user_id", "status"),
     )
 
     def to_dict(self):
@@ -144,12 +150,16 @@ class Match(db.Model):
     match_id = db.Column(db.Integer, primary_key=True)
     user1_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     user2_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
-    created_at = db.Column(db.DateTime, default=utc_now)
+    created_at = db.Column(db.DateTime, default=utc_now, index=True)
 
     user1 = db.relationship("User", foreign_keys=[user1_id])
     user2 = db.relationship("User", foreign_keys=[user2_id])
 
-    __table_args__ = (db.UniqueConstraint("user1_id", "user2_id", name="unique_match"),)
+    __table_args__ = (
+        db.UniqueConstraint("user1_id", "user2_id", name="unique_match"),
+        db.Index("ix_matches_user1_created_at", "user1_id", "created_at"),
+        db.Index("ix_matches_user2_created_at", "user2_id", "created_at"),
+    )
 
     def to_dict(self, include_profiles=False):
         result = {
@@ -163,6 +173,15 @@ class Match(db.Model):
 
 class Notification(db.Model):
     __tablename__ = "notifications"
+    __table_args__ = (
+        db.Index(
+            "ix_notifications_user_read_created",
+            "user_id",
+            "is_read",
+            "created_at",
+        ),
+        db.Index("ix_notifications_from_user", "from_user_id"),
+    )
 
     notification_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
@@ -170,7 +189,7 @@ class Notification(db.Model):
     message = db.Column(db.String(255), nullable=False)
     from_user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
     is_read = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=utc_now)
+    created_at = db.Column(db.DateTime, default=utc_now, index=True)
 
     gets = db.relationship("User", foreign_keys=[from_user_id])
 
@@ -188,12 +207,27 @@ class Notification(db.Model):
 
 class Message(db.Model):
     __tablename__ = "messages"
+    __table_args__ = (
+        db.Index("ix_messages_receiver_read", "receiver_id", "read_at"),
+        db.Index(
+            "ix_messages_sender_receiver_created",
+            "sender_id",
+            "receiver_id",
+            "created_at",
+        ),
+        db.Index(
+            "ix_messages_receiver_sender_created",
+            "receiver_id",
+            "sender_id",
+            "created_at",
+        ),
+    )
 
     message_id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=utc_now)
+    created_at = db.Column(db.DateTime, default=utc_now, index=True)
     read_at = db.Column(db.DateTime, nullable=True)
 
     sender = db.relationship("User", foreign_keys=[sender_id])
@@ -224,13 +258,14 @@ class Bookmark(db.Model):
     bookmarked_user_id = db.Column(
         db.Integer, db.ForeignKey("users.user_id"), nullable=False
     )
-    created_at = db.Column(db.DateTime, default=utc_now)
+    created_at = db.Column(db.DateTime, default=utc_now, index=True)
 
     user = db.relationship("User", foreign_keys=[user_id])
     bookmarks = db.relationship("User", foreign_keys=[bookmarked_user_id])
 
     __table_args__ = (
         db.UniqueConstraint("user_id", "bookmarked_user_id", name="unique_bookmark"),
+        db.Index("ix_bookmark_user_created_at", "user_id", "created_at"),
     )
 
     def to_dict(self):
