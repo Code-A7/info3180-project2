@@ -4,11 +4,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Set a fixed random seed for reproducible seeding
-random.seed(42)
-
 from app import bcrypt, create_app, db
 from app.models import Bookmark, Like, Match, Message, Notification, Profile, User
+
+# Set a fixed random seed for reproducible seeding
+random.seed(42)
 
 instance_dir = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "instance"
