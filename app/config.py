@@ -86,7 +86,9 @@ class TestingConfig(Config):
     """Testing configuration."""
 
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SQLALCHEMY_DATABASE_URI = get_env_var(
+        "SQLALCHEMY_DATABASE_URI", "sqlite:///:memory:"
+    )
     WTF_CSRF_ENABLED = False
     MAILTRAP_SMTP_USER = None
     MAILTRAP_SMTP_PASS = None

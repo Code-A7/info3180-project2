@@ -5,6 +5,7 @@ import shutil
 from unittest.mock import patch
 
 from app import create_app, db
+from app.config import TestingConfig
 
 
 class SocketEmitMock:
@@ -29,14 +30,11 @@ class SocketEmitMock:
 @pytest.fixture
 def app():
     """Create and configure a test application instance."""
-    app = create_app()
+    app = create_app(TestingConfig)
+    
+    # Test-specific overrides that shouldn't be in main config
     app.config.update(
         {
-            "TESTING": True,
-            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-            "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-            "MAILTRAP_SMTP_USER": None,
-            "MAILTRAP_SMTP_PASS": None,
             "SECRET_KEY": "test-secret-key-for-testing",
             "WTF_CSRF_ENABLED": False,
         }
@@ -46,7 +44,7 @@ def app():
     app.config["UPLOAD_FOLDER"] = tempfile.mkdtemp()
 
     with app.app_context():
-        db.create_all()
+        # db.create_all() is already called in create_app()
         yield app
         db.session.remove()
         db.drop_all()
@@ -60,6 +58,8 @@ def app():
 def clean_db(app):
     """Clean database before each test."""
     with app.app_context():
+        # Delete data from all tables instead of dropping them
+        # to speed up tests and avoid locks
         for table in reversed(db.metadata.sorted_tables):
             db.session.execute(table.delete())
         db.session.commit()

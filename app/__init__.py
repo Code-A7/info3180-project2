@@ -6,7 +6,6 @@ from flask_socketio import SocketIO
 from flask_migrate import Migrate
 from app.config import Config
 import os
-import subprocess
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -18,9 +17,9 @@ migrate = Migrate()
 connected_users = {}
 
 
-def create_app():
+def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config.from_object(Config)
+    app.config.from_object(config_class)
     app.config["WTF_CSRF_ENABLED"] = False
 
     CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -86,7 +85,5 @@ def create_app():
     return app
 
 
-
 # SEED DATABASE
 # subprocess.run(["python", "seed.py"])
-
