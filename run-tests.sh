@@ -11,6 +11,7 @@ show_help() {
     echo "  --auth          Run authentication tests only"
     echo "  --seed          Run seed script tests only"
     echo "  --utils         Run utility function tests only"
+    echo "  --migrations    Run migration tests only"
     echo "  --profile       Run profile tests only"
     echo "  --likes         Run likes/dislikes tests only"
     echo "  --matches       Run match algorithm tests only"
@@ -18,7 +19,7 @@ show_help() {
     echo "  --messaging     Run messaging tests only"
     echo "  --search        Run search tests only"
     echo "  --integration   Run integration tests only"
-    echo "  --fast          Run core tests only (auth, seed, utils)"
+    echo "  --fast          Run core tests only (auth, seed, utils, migrations)"
     echo "  --coverage      Run all tests with coverage report"
     echo "  --help          Show this help message"
     echo ""
@@ -50,6 +51,12 @@ run_utils() {
     source .venv/bin/activate 2>/dev/null || true
     echo "Running utility function tests..."
     pytest tests/test_utils.py -v --tb=short
+}
+
+run_migrations() {
+    source .venv/bin/activate 2>/dev/null || true
+    echo "Running migration tests..."
+    pytest tests/test_migrations.py -v --tb=short
 }
 
 run_profile() {
@@ -97,7 +104,7 @@ run_integration() {
 run_fast() {
     source .venv/bin/activate 2>/dev/null || true
     echo "Running core/fast tests..."
-    pytest tests/test_auth.py tests/test_seed.py tests/test_utils.py -v --tb=short
+    pytest tests/test_auth.py tests/test_seed.py tests/test_utils.py tests/test_migrations.py -v --tb=short
 }
 
 run_coverage() {
@@ -123,6 +130,9 @@ else
             ;;
         --utils)
             run_utils
+            ;;
+        --migrations)
+            run_migrations
             ;;
         --profile)
             run_profile
