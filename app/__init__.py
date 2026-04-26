@@ -79,9 +79,6 @@ def create_app(config_class=Config):
         if user_id and user_id in connected_users:
             del connected_users[user_id]
 
-    with app.app_context():
-        db.create_all()
-
     return app
 
 
