@@ -174,7 +174,12 @@ class Match(db.Model):
 class Notification(db.Model):
     __tablename__ = "notifications"
     __table_args__ = (
-        db.Index("ix_notifications_user_read_created", "user_id", "is_read", "created_at"),
+        db.Index(
+            "ix_notifications_user_read_created",
+            "user_id",
+            "is_read",
+            "created_at",
+        ),
         db.Index("ix_notifications_from_user", "from_user_id"),
     )
 
@@ -204,8 +209,18 @@ class Message(db.Model):
     __tablename__ = "messages"
     __table_args__ = (
         db.Index("ix_messages_receiver_read", "receiver_id", "read_at"),
-        db.Index("ix_messages_sender_receiver_created", "sender_id", "receiver_id", "created_at"),
-        db.Index("ix_messages_receiver_sender_created", "receiver_id", "sender_id", "created_at"),
+        db.Index(
+            "ix_messages_sender_receiver_created",
+            "sender_id",
+            "receiver_id",
+            "created_at",
+        ),
+        db.Index(
+            "ix_messages_receiver_sender_created",
+            "receiver_id",
+            "sender_id",
+            "created_at",
+        ),
     )
 
     message_id = db.Column(db.Integer, primary_key=True)

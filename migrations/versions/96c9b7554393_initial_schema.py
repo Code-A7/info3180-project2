@@ -1,16 +1,16 @@
 """Initial schema
 
 Revision ID: 96c9b7554393
-Revises: 
+Revises:
 Create Date: 2026-04-26 12:21:05.972792
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 
-
 # revision identifiers, used by Alembic.
-revision = '96c9b7554393'
+revision = "96c9b7554393"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -153,7 +153,10 @@ def upgrade():
     )
     op.create_index("ix_messages_created_at", "messages", ["created_at"], unique=False)
     op.create_index(
-        "ix_messages_receiver_read", "messages", ["receiver_id", "read_at"], unique=False
+        "ix_messages_receiver_read",
+        "messages",
+        ["receiver_id", "read_at"],
+        unique=False,
     )
     op.create_index(
         "ix_messages_receiver_sender_created",
