@@ -48,6 +48,7 @@ def app():
     with app.app_context():
         db.create_all()
         yield app
+        db.session.remove()
         db.drop_all()
 
     # Cleanup temp directory
@@ -62,6 +63,7 @@ def clean_db(app):
         for table in reversed(db.metadata.sorted_tables):
             db.session.execute(table.delete())
         db.session.commit()
+        db.session.remove()
 
 
 @pytest.fixture

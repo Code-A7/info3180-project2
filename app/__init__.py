@@ -86,15 +86,7 @@ def create_app():
     return app
 
 
-app = create_app()
 
 # SEED DATABASE
 # subprocess.run(["python", "seed.py"])
 
-if __name__ == "__main__":
-    socketio.run(app, debug=True, port=5000)
-    # SEED DATABASE
-    script_path = "/app/seed.py"
-    script_dir = os.path.dirname(script_path)
-    # Run the script as a separate process in its own directory
-    subprocess.run(["python", script_path], cwd=script_dir)

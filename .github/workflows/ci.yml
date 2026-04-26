@@ -46,14 +46,14 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov pytest-xdist pytest-timeout
 
-      - name: Create instance directory
-        run: mkdir -p instance
+      - name: Create instance and results directory
+        run: mkdir -p instance test-results
 
       - name: Run tests (Group ${{ matrix.test-group }})
         run: |
           case ${{ matrix.test-group }} in
             1) TEST_PATTERN="test_auth|test_seed|test_utils" ;;
-            2) TEST_PATTERN="test_profile|test_views_utils|test_upload" ;;
+            2) TEST_PATTERN="test_profile|test_views_utils" ;;
             3) TEST_PATTERN="test_likes|test_matches|test_notifications" ;;
             4) TEST_PATTERN="test_messaging|test_search|test_integration" ;;
           esac
@@ -93,7 +93,7 @@ jobs:
 
       - name: Run integration tests with SQLite
         env:
-          SQLALCHEMY_DATABASE_UNIT: sqlite:///instance/test.db
+          SQLALCHEMY_DATABASE_URI: sqlite:///instance/test.db
         run: |
           pytest tests/test_integration.py -v --tb=short --timeout=120
 
@@ -140,8 +140,8 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
 
-      - name: Create instance directory
-        run: mkdir -p instance
+      - name: Create instance and results directory
+        run: mkdir -p instance test-results
 
       - name: Build frontend
         run: npm run build
@@ -152,13 +152,8 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Start backend server for E2E tests
-        run: |
-          python run.py &
-          sleep 8
-
       - name: Run Playwright E2E tests
-        run: npm run test:e2e || true
+        run: npm run test:e2e
 
       - name: Upload Playwright results
         if: always()

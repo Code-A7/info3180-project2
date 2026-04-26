@@ -82,7 +82,7 @@ def get_conversations():
         unread_count = Message.query.filter(
             Message.sender_id == other_user_id,
             Message.receiver_id == user.user_id,
-            Message.read_at is None,
+            Message.read_at == None,
         ).count()
 
         conversations.append(
@@ -140,7 +140,7 @@ def get_message_history(other_user_id):
     Message.query.filter(
         Message.sender_id == other_user_id,
         Message.receiver_id == user.user_id,
-        Message.read_at is None,
+        Message.read_at == None,
     ).update({"read_at": db.func.now()})
     db.session.commit()
 
@@ -263,7 +263,7 @@ def get_unread_count():
         return jsonify({"error": "Authentication required"}), 401
 
     count = Message.query.filter(
-        Message.receiver_id == user.user_id, Message.read_at is None
+        Message.receiver_id == user.user_id, Message.read_at == None
     ).count()
 
     return jsonify({"unread_count": count}), 200

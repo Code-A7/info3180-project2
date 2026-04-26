@@ -18,7 +18,8 @@ bp_notifications = Blueprint("notifications", __name__, url_prefix="/api/notific
 def send_email(to_email, subject, body):
     """Send email with rate limiting"""
     # Rate limiting: 1 second delay between emails
-    time.sleep(1)
+    if not current_app.config.get("TESTING"):
+        time.sleep(1)
 
     try:
         smtp_host = current_app.config.get("MAILTRAP_SMTP_HOST")
