@@ -3,6 +3,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+instance_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "instance")
+if not os.path.exists(instance_dir):
+    os.makedirs(instance_dir)
+    print(f"Created instance folder: {instance_dir}")
+
 import random
 
 from werkzeug.security import generate_password_hash
