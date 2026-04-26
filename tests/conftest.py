@@ -30,28 +30,29 @@ class SocketEmitMock:
 @pytest.fixture
 def app():
     """Create and configure a test application instance."""
-    app = create_app(TestingConfig)
-    
-    # Test-specific overrides that shouldn't be in main config
-    app.config.update(
-        {
-            "SECRET_KEY": "test-secret-key-for-testing",
-            "WTF_CSRF_ENABLED": False,
-        }
-    )
+    temp_dir = tempfile.mkdtemp()
+    db_path = os.path.join(temp_dir, "test.db")
+    upload_dir = os.path.join(temp_dir, "uploads")
 
-    # Create temp upload directory for tests
-    app.config["UPLOAD_FOLDER"] = tempfile.mkdtemp()
+    class IsolatedTestingConfig(TestingConfig):
+        SECRET_KEY = "test-secret-key-for-testing"
+        SQLALCHEMY_DATABASE_URI = f"sqlite:///{db_path}"
+        SQLALCHEMY_ENGINE_OPTIONS = {}
+        WTF_CSRF_ENABLED = False
+        UPLOAD_FOLDER = upload_dir
+
+    app = create_app(IsolatedTestingConfig)
 
     with app.app_context():
-        # db.create_all() is already called in create_app()
+        from app import models  # noqa: F401
+
+        db.drop_all()
+        db.create_all()
         yield app
         db.session.remove()
         db.drop_all()
 
-    # Cleanup temp directory
-    if os.path.exists(app.config["UPLOAD_FOLDER"]):
-        shutil.rmtree(app.config["UPLOAD_FOLDER"])
+    shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 @pytest.fixture(autouse=True)
