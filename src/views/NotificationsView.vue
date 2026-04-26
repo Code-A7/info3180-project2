@@ -2,22 +2,26 @@
   <div class="notifications-container">
     <div class="header">
       <h1>Notifications</h1>
-      <button v-if="notifications.length > 0" @click="markAllAsRead" class="mark-all-btn">
+      <button
+        v-if="notifications.length > 0"
+        class="mark-all-btn"
+        @click="markAllAsRead"
+      >
         Mark all as read
       </button>
     </div>
-    
+
     <div v-if="loading" class="loading">Loading notifications...</div>
-    
+
     <div v-else-if="notifications.length === 0" class="no-notifications">
       <h3>No notifications yet</h3>
       <p>When someone likes you or matches with you, you'll see it here!</p>
     </div>
-    
+
     <div v-else class="notifications-list">
-      <div 
-        v-for="notification in notifications" 
-        :key="notification.id" 
+      <div
+        v-for="notification in notifications"
+        :key="notification.id"
         class="notification-item"
         :class="{ unread: !notification.is_read }"
         @click="handleNotificationClick(notification)"
@@ -27,12 +31,14 @@
           <span v-else-if="notification.type === 'like'">❤️</span>
           <span v-else>🔔</span>
         </div>
-        
+
         <div class="notification-content">
           <p class="notification-message">{{ notification.message }}</p>
-          <p class="notification-time">{{ formatDate(notification.created_at) }}</p>
+          <p class="notification-time">
+            {{ formatDate(notification.created_at) }}
+          </p>
         </div>
-        
+
         <div v-if="!notification.is_read" class="unread-dot"></div>
       </div>
     </div>
@@ -40,10 +46,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
-import notificationService from '../services/notificationService';
-import socketService from '../services/socketService';
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import notificationService from "../services/notificationService";
+import socketService from "../services/socketService";
 
 const router = useRouter();
 const notifications = ref([]);
@@ -54,7 +60,7 @@ const loadNotifications = async () => {
   try {
     notifications.value = await notificationService.getNotifications();
   } catch (error) {
-    console.error('Failed to load notifications:', error);
+    console.error("Failed to load notifications:", error);
   } finally {
     loading.value = false;
   }
@@ -63,9 +69,12 @@ const loadNotifications = async () => {
 const markAllAsRead = async () => {
   try {
     await notificationService.markAllAsRead();
-    notifications.value = notifications.value.map(n => ({ ...n, is_read: true }));
+    notifications.value = notifications.value.map((n) => ({
+      ...n,
+      is_read: true,
+    }));
   } catch (error) {
-    console.error('Failed to mark all as read:', error);
+    console.error("Failed to mark all as read:", error);
   }
 };
 
@@ -75,23 +84,23 @@ const handleNotificationClick = async (notification) => {
       await notificationService.markAsRead(notification.id);
       notification.is_read = true;
     } catch (error) {
-      console.error('Failed to mark as read:', error);
+      console.error("Failed to mark as read:", error);
     }
   }
-  
+
   // Navigate based on notification type
-  if (notification.type === 'match' || notification.type === 'like') {
-    router.push('/matches');
+  if (notification.type === "match" || notification.type === "like") {
+    router.push("/matches");
   }
 };
 
 const formatDate = (dateString) => {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = new Date(dateString);
   const now = new Date();
   const diff = now - date;
-  
-  if (diff < 60000) return 'just now';
+
+  if (diff < 60000) return "just now";
   if (diff < 3600000) return `${Math.floor(diff / 60000)} minutes ago`;
   if (diff < 86400000) return `${Math.floor(diff / 3600000)} hours ago`;
   if (diff < 604800000) return `${Math.floor(diff / 86400000)} days ago`;
@@ -104,15 +113,15 @@ const handleNewNotification = (notification) => {
 
 onMounted(() => {
   loadNotifications();
-  socketService.on('notification', handleNewNotification);
-  socketService.on('new_match', handleNewNotification);
-  socketService.on('new_like', handleNewNotification);
+  socketService.on("notification", handleNewNotification);
+  socketService.on("new_match", handleNewNotification);
+  socketService.on("new_like", handleNewNotification);
 });
 
 onUnmounted(() => {
-  socketService.off('notification', handleNewNotification);
-  socketService.off('new_match', handleNewNotification);
-  socketService.off('new_like', handleNewNotification);
+  socketService.off("notification", handleNewNotification);
+  socketService.off("new_match", handleNewNotification);
+  socketService.off("new_like", handleNewNotification);
 });
 </script>
 

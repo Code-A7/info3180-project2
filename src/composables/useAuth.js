@@ -1,6 +1,6 @@
-import { ref, computed } from 'vue';
-import authService from '../services/authService';
-import socketService from '../services/socketService';
+import { ref, computed } from "vue";
+import authService from "../services/authService";
+import socketService from "../services/socketService";
 
 // Reactive state
 const currentUser = ref(authService.getStoredUser());
@@ -21,7 +21,7 @@ async function login(email, password, rememberMe = false) {
     currentUser.value = response.user;
     return response;
   } catch (error) {
-    authError.value = error.message || 'Login failed';
+    authError.value = error.message || "Login failed";
     throw error;
   } finally {
     isLoading.value = false;
@@ -36,7 +36,7 @@ async function register(email, password) {
     const response = await authService.register(email, password);
     return response;
   } catch (error) {
-    authError.value = error.message || 'Registration failed';
+    authError.value = error.message || "Registration failed";
     throw error;
   } finally {
     isLoading.value = false;
@@ -52,7 +52,7 @@ async function logout() {
     currentUser.value = null;
     authError.value = null;
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error("Logout error:", error);
   } finally {
     isLoading.value = false;
   }
@@ -66,7 +66,7 @@ async function verifyEmail(token) {
     const response = await authService.verifyEmail(token);
     return response;
   } catch (error) {
-    authError.value = error.message || 'Email verification failed';
+    authError.value = error.message || "Email verification failed";
     throw error;
   } finally {
     isLoading.value = false;
@@ -105,7 +105,7 @@ export function useAuth() {
     logout,
     verifyEmail,
     refreshUser,
-    clearError
+    clearError,
   };
 }
 

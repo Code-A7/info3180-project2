@@ -1,13 +1,13 @@
-import api from './api';
+import api from "./api";
 
 export const searchService = {
   async searchProfiles(params) {
-    const response = await api.post('/api/matches/search', params);
+    const response = await api.post("/api/matches/search", params);
     return response.data;
   },
 
   async getBookmarks() {
-    const response = await api.get('/api/matches/bookmarks');
+    const response = await api.get("/api/matches/bookmarks");
     return response.data;
   },
 
@@ -27,7 +27,7 @@ export const searchService = {
     } else {
       return this.addBookmark(userId);
     }
-  }
+  },
 };
 
 export default searchService;

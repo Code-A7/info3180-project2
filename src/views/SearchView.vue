@@ -4,42 +4,89 @@
       <h1>Search Profiles</h1>
       <p>Find your perfect match</p>
     </div>
-    
+
     <div class="search-form">
       <div class="form-grid">
         <div class="form-group">
           <label>
-            <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" viewBox="0 0 20 20" fill="currentColor">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="label-icon"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
               <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
             </svg>
             Age Range
           </label>
           <div class="age-inputs">
-            <input v-model.number="searchParams.age_min" type="number" placeholder="Min" min="18" max="100" class="form-input" />
+            <input
+              v-model.number="searchParams.age_min"
+              type="number"
+              placeholder="Min"
+              min="18"
+              max="100"
+              class="form-input"
+            />
             <span class="age-separator">-</span>
-            <input v-model.number="searchParams.age_max" type="number" placeholder="Max" min="18" max="100" class="form-input" />
+            <input
+              v-model.number="searchParams.age_max"
+              type="number"
+              placeholder="Max"
+              min="18"
+              max="100"
+              class="form-input"
+            />
           </div>
         </div>
-        
+
         <div class="form-group">
           <label>
-            <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="label-icon"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                clip-rule="evenodd"
+              />
             </svg>
             Age Range
           </label>
           <div class="age-inputs">
-            <input v-model.number="searchParams.age_min" type="number" placeholder="Min" min="18" max="100" class="form-input" />
+            <input
+              v-model.number="searchParams.age_min"
+              type="number"
+              placeholder="Min"
+              min="18"
+              max="100"
+              class="form-input"
+            />
             <span class="age-separator">-</span>
-            <input v-model.number="searchParams.age_max" type="number" placeholder="Max" min="18" max="100" class="form-input" />
+            <input
+              v-model.number="searchParams.age_max"
+              type="number"
+              placeholder="Max"
+              min="18"
+              max="100"
+              class="form-input"
+            />
           </div>
         </div>
       </div>
-      
+
       <div class="form-grid">
         <div class="form-group">
           <label>
-            <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" viewBox="0 0 20 20" fill="currentColor">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="label-icon"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
               <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
             </svg>
             Gender
@@ -51,11 +98,18 @@
             <option value="non-binary">Non-binary</option>
           </select>
         </div>
-        
+
         <div class="form-group">
           <label>
-            <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="label-icon"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+              />
             </svg>
             Relationship Goal
           </label>
@@ -68,35 +122,70 @@
           </select>
         </div>
       </div>
-      
+
       <div class="form-grid">
         <div class="form-group">
           <label>
-            <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="label-icon"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+              />
             </svg>
             Interests
           </label>
-          <input v-model="interestsInput" type="text" placeholder="music, travel, gaming (comma separated)" class="form-input" />
+          <input
+            v-model="interestsInput"
+            type="text"
+            placeholder="music, travel, gaming (comma separated)"
+            class="form-input"
+          />
         </div>
-        
+
         <div class="form-group">
           <label>
-            <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd" />
-              <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="label-icon"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z"
+                clip-rule="evenodd"
+              />
+              <path
+                d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"
+              />
             </svg>
             Occupation
           </label>
-          <input v-model="searchParams.occupation" type="text" placeholder="Job title or field" class="form-input" />
+          <input
+            v-model="searchParams.occupation"
+            type="text"
+            placeholder="Job title or field"
+            class="form-input"
+          />
         </div>
       </div>
-      
+
       <div class="form-row-single">
         <div class="form-group">
           <label>
-            <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="label-icon"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"
+              />
             </svg>
             Sort By
           </label>
@@ -109,55 +198,94 @@
           </select>
         </div>
       </div>
-      
+
       <div class="form-actions">
-        <button @click="handleSearch" class="btn-search" :disabled="searching">
-          <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+        <button class="btn-search" :disabled="searching" @click="handleSearch">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="btn-icon"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+              clip-rule="evenodd"
+            />
           </svg>
-          {{ searching ? 'Searching...' : 'Search' }}
+          {{ searching ? "Searching..." : "Search" }}
         </button>
-        <button @click="clearFilters" class="btn-clear">Clear Filters</button>
+        <button class="btn-clear" @click="clearFilters">Clear Filters</button>
       </div>
     </div>
-    
+
     <div v-if="loading" class="loading">
       <div class="loading-spinner"></div>
       <p>Finding matches...</p>
     </div>
-    
+
     <div v-else-if="results.length === 0 && searched" class="no-results">
       <div class="no-results-icon">🔍</div>
       <h3>No profiles found</h3>
       <p>Try adjusting your search criteria</p>
     </div>
-    
+
     <div v-else class="results-grid">
-      <div v-for="profile in results" :key="profile.user_id" class="profile-card">
+      <div
+        v-for="profile in results"
+        :key="profile.user_id"
+        class="profile-card"
+      >
         <div class="profile-image">
-          <img v-if="profile.profile_picture" :src="`http://localhost:5000/uploads/${profile.profile_picture}`" alt="Profile" />
-          <div v-else class="avatar-placeholder">{{ profile.name?.charAt(0) }}</div>
-          <div v-if="profile.match_score" class="match-badge">{{ profile.match_score }}%</div>
+          <img
+            v-if="profile.profile_picture"
+            :src="`http://localhost:5000/uploads/${profile.profile_picture}`"
+            alt="Profile"
+          />
+          <div v-else class="avatar-placeholder">
+            {{ profile.name?.charAt(0) }}
+          </div>
+          <div v-if="profile.match_score" class="match-badge">
+            {{ profile.match_score }}%
+          </div>
         </div>
-        
+
         <div class="profile-info">
           <h3>{{ profile.name }}, {{ profile.age }}</h3>
-          
-          <p class="bio">{{ profile.bio?.substring(0, 80) }}{{ profile.bio?.length > 80 ? '...' : '' }}</p>
-          
+
+          <p class="bio">
+            {{ profile.bio?.substring(0, 80)
+            }}{{ profile.bio?.length > 80 ? "..." : "" }}
+          </p>
+
           <div class="interests">
-            <span v-for="interest in profile.interests?.slice(0, 3)" :key="interest" class="interest-tag">
+            <span
+              v-for="interest in profile.interests?.slice(0, 3)"
+              :key="interest"
+              class="interest-tag"
+            >
               {{ interest }}
             </span>
           </div>
-          
+
           <div class="profile-actions">
-            <button @click="toggleBookmark(profile)" class="btn-bookmark" :class="{ active: profile.is_bookmarked }">
-              <svg xmlns="http://www.w3.org/2000/svg" class="bookmark-icon" viewBox="0 0 20 20" fill="currentColor">
+            <button
+              class="btn-bookmark"
+              :class="{ active: profile.is_bookmarked }"
+              @click="toggleBookmark(profile)"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="bookmark-icon"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
                 <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
               </svg>
             </button>
-            <router-link :to="`/profile/${profile.user_id}`" class="btn-view">View Profile</router-link>
+            <router-link :to="`/profile/${profile.user_id}`" class="btn-view"
+              >View Profile</router-link
+            >
           </div>
         </div>
       </div>
@@ -166,19 +294,19 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
-import searchService from '../services/searchService';
+import { ref, reactive } from "vue";
+import searchService from "../services/searchService";
 
 const searchParams = reactive({
   age_min: null,
   age_max: null,
-  gender: '',
-  relationship_goal: '',
-  occupation: '',
-  sort_by: 'newest'
+  gender: "",
+  relationship_goal: "",
+  occupation: "",
+  sort_by: "newest",
 });
 
-const interestsInput = ref('');
+const interestsInput = ref("");
 const results = ref([]);
 const loading = ref(false);
 const searching = ref(false);
@@ -188,23 +316,26 @@ const handleSearch = async () => {
   loading.value = true;
   searching.value = true;
   searched.value = true;
-  
+
   try {
     const params = { ...searchParams };
-    
+
     if (interestsInput.value) {
-      params.interests = interestsInput.value.split(',').map(i => i.trim()).filter(i => i);
+      params.interests = interestsInput.value
+        .split(",")
+        .map((i) => i.trim())
+        .filter((i) => i);
     }
-    
-    Object.keys(params).forEach(key => {
-      if (params[key] === '' || params[key] === null) {
+
+    Object.keys(params).forEach((key) => {
+      if (params[key] === "" || params[key] === null) {
         delete params[key];
       }
     });
-    
+
     results.value = await searchService.searchProfiles(params);
   } catch (error) {
-    console.error('Search failed:', error);
+    console.error("Search failed:", error);
   } finally {
     loading.value = false;
     searching.value = false;
@@ -214,11 +345,11 @@ const handleSearch = async () => {
 const clearFilters = () => {
   searchParams.age_min = null;
   searchParams.age_max = null;
-  searchParams.gender = '';
-  searchParams.relationship_goal = '';
-  searchParams.occupation = '';
-  searchParams.sort_by = 'newest';
-  interestsInput.value = '';
+  searchParams.gender = "";
+  searchParams.relationship_goal = "";
+  searchParams.occupation = "";
+  searchParams.sort_by = "newest";
+  interestsInput.value = "";
   results.value = [];
   searched.value = false;
 };
@@ -228,7 +359,7 @@ const toggleBookmark = async (profile) => {
     await searchService.toggleBookmark(profile.user_id, profile.is_bookmarked);
     profile.is_bookmarked = !profile.is_bookmarked;
   } catch (error) {
-    console.error('Failed to toggle bookmark:', error);
+    console.error("Failed to toggle bookmark:", error);
   }
 };
 </script>
@@ -510,7 +641,11 @@ const toggleBookmark = async (profile) => {
 
 .interest-tag {
   padding: 0.2rem 0.5rem;
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(139, 92, 246, 0.12));
+  background: linear-gradient(
+    135deg,
+    rgba(20, 184, 166, 0.12),
+    rgba(139, 92, 246, 0.12)
+  );
   color: #4b5563;
   border-radius: 9999px;
   font-size: 0.65rem;
@@ -519,7 +654,11 @@ const toggleBookmark = async (profile) => {
 }
 
 :global(.dark) .interest-tag {
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(139, 92, 246, 0.2));
+  background: linear-gradient(
+    135deg,
+    rgba(20, 184, 166, 0.2),
+    rgba(139, 92, 246, 0.2)
+  );
   color: #d1d5db;
 }
 
@@ -616,7 +755,9 @@ const toggleBookmark = async (profile) => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading p {

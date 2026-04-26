@@ -3,87 +3,134 @@
     <div class="filters-bar">
       <div class="filter-group">
         <label>Age Range:</label>
-        <input 
-          type="number" 
-          v-model="filters.ageMin" 
-          placeholder="Min" 
-          min="18" 
+        <input
+          v-model="filters.ageMin"
+          type="number"
+          placeholder="Min"
+          min="18"
           max="100"
           class="filter-input"
         />
         <span class="filter-separator">-</span>
-        <input 
-          type="number" 
-          v-model="filters.ageMax" 
-          placeholder="Max" 
-          min="18" 
+        <input
+          v-model="filters.ageMax"
+          type="number"
+          placeholder="Max"
+          min="18"
           max="100"
           class="filter-input"
         />
       </div>
-      <button @click="applyFilters" class="filter-btn">Apply Filters</button>
+      <button class="filter-btn" @click="applyFilters">Apply Filters</button>
     </div>
 
     <div v-if="loading" class="loading">
       <div class="loading-spinner"></div>
       <p>Finding your perfect match...</p>
     </div>
-    
+
     <div v-else-if="!currentProfile" class="no-profiles">
       <div class="no-profiles-icon">✨</div>
       <h3>No more profiles to show</h3>
       <p>Check back later for new matches!</p>
     </div>
-    
+
     <div v-else class="profile-card">
       <div class="profile-image">
-        <img v-if="currentProfile.profile_picture" :src="`http://localhost:5000/uploads/${currentProfile.profile_picture}`" alt="Profile" />
-        <div v-else class="avatar-placeholder">{{ currentProfile.name?.charAt(0) }}</div>
+        <img
+          v-if="currentProfile.profile_picture"
+          :src="`http://localhost:5000/uploads/${currentProfile.profile_picture}`"
+          alt="Profile"
+        />
+        <div v-else class="avatar-placeholder">
+          {{ currentProfile.name?.charAt(0) }}
+        </div>
         <div v-if="currentProfile.match_score" class="match-badge">
           {{ currentProfile.match_score }}% Match
         </div>
       </div>
-      
+
       <div class="profile-info">
         <h2>{{ currentProfile.name }}, {{ currentProfile.age }}</h2>
-        
+
         <p class="bio">{{ currentProfile.bio }}</p>
-        
+
         <div class="interests">
-          <span v-for="interest in currentProfile.interests" :key="interest" class="interest-tag">
+          <span
+            v-for="interest in currentProfile.interests"
+            :key="interest"
+            class="interest-tag"
+          >
             {{ interest }}
           </span>
         </div>
-        
+
         <div class="profile-details">
-          <div><span class="detail-label">Goal:</span> {{ formatGoal(currentProfile.relationship_goal) }}</div>
-          <div><span class="detail-label">Occupation:</span> {{ currentProfile.occupation }}</div>
+          <div>
+            <span class="detail-label">Goal:</span>
+            {{ formatGoal(currentProfile.relationship_goal) }}
+          </div>
+          <div>
+            <span class="detail-label">Occupation:</span>
+            {{ currentProfile.occupation }}
+          </div>
         </div>
       </div>
-      
+
       <div class="action-buttons">
         <button class="btn-action btn-pass" @click="handlePass">
-          <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon-svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="btn-icon-svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
           </svg>
           Pass
         </button>
         <button class="btn-action btn-dislike" @click="handleDislike">
-          <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon-svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="btn-icon-svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+              clip-rule="evenodd"
+            />
           </svg>
           Dislike
         </button>
         <button class="btn-action btn-like" @click="handleLike">
-          <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon-svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="btn-icon-svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+              clip-rule="evenodd"
+            />
           </svg>
           Like
         </button>
       </div>
     </div>
-    
-    <div v-if="showMatchPopup" class="match-popup" @click.self="closeMatchPopup">
+
+    <div
+      v-if="showMatchPopup"
+      class="match-popup"
+      @click.self="closeMatchPopup"
+    >
       <div class="popup-content">
         <div class="match-animation">
           <div class="heart heart-1">❤️</div>
@@ -92,15 +139,17 @@
         </div>
         <h2>It's a Match!</h2>
         <p>You and {{ matchedProfile?.name }} liked each other!</p>
-        <button @click="closeMatchPopup" class="btn-primary">Keep Browsing</button>
+        <button class="btn-primary" @click="closeMatchPopup">
+          Keep Browsing
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import matchService from '../services/matchService';
+import { ref, onMounted } from "vue";
+import matchService from "../services/matchService";
 
 const profiles = ref([]);
 const currentIndex = ref(0);
@@ -110,7 +159,7 @@ const matchedProfile = ref(null);
 
 const filters = ref({
   ageMin: 18,
-  ageMax: 50
+  ageMax: 50,
 });
 
 const currentProfile = ref(null);
@@ -123,7 +172,7 @@ const loadProfiles = async () => {
     currentIndex.value = 0;
     currentProfile.value = profiles.value[0] || null;
   } catch (error) {
-    console.error('Failed to load profiles:', error);
+    console.error("Failed to load profiles:", error);
   } finally {
     loading.value = false;
   }
@@ -135,43 +184,43 @@ const applyFilters = () => {
 
 const handleLike = async () => {
   if (!currentProfile.value) return;
-  
+
   try {
     const result = await matchService.likeUser(currentProfile.value.user_id);
-    
+
     if (result.match) {
       matchedProfile.value = result.matched_profile;
       showMatchPopup.value = true;
     }
-    
+
     nextProfile();
   } catch (error) {
-    console.error('Failed to like user:', error);
+    console.error("Failed to like user:", error);
     nextProfile();
   }
 };
 
 const handleDislike = async () => {
   if (!currentProfile.value) return;
-  
+
   try {
     await matchService.dislikeUser(currentProfile.value.user_id);
   } catch (error) {
-    console.error('Failed to dislike user:', error);
+    console.error("Failed to dislike user:", error);
   }
-  
+
   nextProfile();
 };
 
 const handlePass = async () => {
   if (!currentProfile.value) return;
-  
+
   try {
     await matchService.passUser(currentProfile.value.user_id);
   } catch (error) {
-    console.error('Failed to pass user:', error);
+    console.error("Failed to pass user:", error);
   }
-  
+
   nextProfile();
 };
 
@@ -187,10 +236,10 @@ const closeMatchPopup = () => {
 
 const formatGoal = (goal) => {
   const map = {
-    'friendship': 'Friendship',
-    'casual_dating': 'Casual Dating',
-    'serious_relationship': 'Serious Relationship',
-    'marriage': 'Marriage'
+    friendship: "Friendship",
+    casual_dating: "Casual Dating",
+    serious_relationship: "Serious Relationship",
+    marriage: "Marriage",
   };
   return map[goal] || goal;
 };
@@ -372,7 +421,11 @@ onMounted(loadProfiles);
 
 .interest-tag {
   padding: 0.25rem 0.7rem;
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.15), rgba(139, 92, 246, 0.15));
+  background: linear-gradient(
+    135deg,
+    rgba(20, 184, 166, 0.15),
+    rgba(139, 92, 246, 0.15)
+  );
   color: #374151;
   border-radius: 9999px;
   font-size: 0.7rem;
@@ -381,7 +434,11 @@ onMounted(loadProfiles);
 }
 
 :global(.dark) .interest-tag {
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.25), rgba(139, 92, 246, 0.25));
+  background: linear-gradient(
+    135deg,
+    rgba(20, 184, 166, 0.25),
+    rgba(139, 92, 246, 0.25)
+  );
   color: #e5e7eb;
 }
 
@@ -512,7 +569,9 @@ onMounted(loadProfiles);
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading p {
@@ -558,13 +617,27 @@ onMounted(loadProfiles);
   animation: heartbeat 1.2s ease-in-out infinite;
 }
 
-.heart-1 { left: 50%; transform: translateX(-50%); }
-.heart-2 { left: 30%; animation-delay: 0.2s; }
-.heart-3 { right: 30%; animation-delay: 0.4s; }
+.heart-1 {
+  left: 50%;
+  transform: translateX(-50%);
+}
+.heart-2 {
+  left: 30%;
+  animation-delay: 0.2s;
+}
+.heart-3 {
+  right: 30%;
+  animation-delay: 0.4s;
+}
 
 @keyframes heartbeat {
-  0%, 100% { transform: translateX(-50%) scale(1); }
-  50% { transform: translateX(-50%) scale(1.2); }
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.2);
+  }
 }
 
 .popup-content h2 {
@@ -604,12 +677,22 @@ onMounted(loadProfiles);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 </style>

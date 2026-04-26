@@ -44,12 +44,15 @@ def rate_limit(max_requests=5, window_seconds=300):
             if window_key in rate_limit_store:
                 request_count, _ = rate_limit_store[window_key]
                 if request_count >= max_requests:
-                    return jsonify(
-                        {
-                            "error": "Too many requests. Please try again later.",
-                            "retry_after": window_seconds,
-                        }
-                    ), 429
+                    return (
+                        jsonify(
+                            {
+                                "error": "Too many requests. Please try again later.",
+                                "retry_after": window_seconds,
+                            }
+                        ),
+                        429,
+                    )
 
             # Increment counter
             if window_key not in rate_limit_store:
@@ -173,7 +176,7 @@ def get_user_from_token():
         )
         user = db.session.get(User, payload["user_id"])
         return user
-    except:
+    except Exception:
         return None
 
 
@@ -224,12 +227,15 @@ def register():
 
     send_email(user.email, "Verify your DriftDater account", email_body)
 
-    return jsonify(
-        {
-            "message": "Registration successful. Please check your email to verify your account.",
-            "user_id": user.user_id,
-        }
-    ), 201
+    return (
+        jsonify(
+            {
+                "message": "Registration successful. Please check your email to verify your account.",
+                "user_id": user.user_id,
+            }
+        ),
+        201,
+    )
 
 
 @bp.route("/api/auth/verify/<token>", methods=["GET"])
@@ -271,30 +277,36 @@ def login():
         return jsonify({"errors": {"general": ["Invalid email or password"]}}), 401
 
     if not user.is_verified:
-        return jsonify(
-            {
-                "errors": {
-                    "general": [
-                        "Please verify your email before logging in. Check your Mailtrap inbox."
-                    ]
+        return (
+            jsonify(
+                {
+                    "errors": {
+                        "general": [
+                            "Please verify your email before logging in. Check your Mailtrap inbox."
+                        ]
+                    }
                 }
-            }
-        ), 401
+            ),
+            401,
+        )
 
     token = generate_token(user.user_id)
 
-    return jsonify(
-        {
-            "message": "Login successful",
-            "token": token,
-            "user": {
-                "id": user.user_id,
-                "email": user.email,
-                "is_verified": user.is_verified,
-                "has_profile": user.profile is not None,
-            },
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "message": "Login successful",
+                "token": token,
+                "user": {
+                    "id": user.user_id,
+                    "email": user.email,
+                    "is_verified": user.is_verified,
+                    "has_profile": user.profile is not None,
+                },
+            }
+        ),
+        200,
+    )
 
 
 @bp.route("/api/auth/logout", methods=["POST"])
@@ -322,11 +334,14 @@ def resend_verification():
 
     if not user:
         # Don't reveal if email exists or not (security best practice)
-        return jsonify(
-            {
-                "message": "If an account exists with this email, a verification link has been sent."
-            }
-        ), 200
+        return (
+            jsonify(
+                {
+                    "message": "If an account exists with this email, a verification link has been sent."
+                }
+            ),
+            200,
+        )
 
     if user.is_verified:
         return jsonify({"error": "Email is already verified"}), 400
@@ -356,9 +371,10 @@ def resend_verification():
 
     send_email(user.email, "Resend: Verify your DriftDater account", email_body)
 
-    return jsonify(
-        {"message": "Verification email sent. Please check your inbox."}
-    ), 200
+    return (
+        jsonify({"message": "Verification email sent. Please check your inbox."}),
+        200,
+    )
 
 
 @bp.route("/api/auth/forgot-password", methods=["POST"])
@@ -379,16 +395,19 @@ def forgot_password():
 
     # Don't reveal if email exists (security best practice)
     if not user:
-        return jsonify(
-            {
-                "message": "If an account exists with this email, a password reset link has been sent."
-            }
-        ), 200
+        return (
+            jsonify(
+                {
+                    "message": "If an account exists with this email, a password reset link has been sent."
+                }
+            ),
+            200,
+        )
 
     # Generate password reset token
     import secrets
 
-    reset_token = secrets.token_urlsafe(32)
+    secrets.token_urlsafe(32)
 
     # Store token hash in database (in production, create a PasswordResetToken model)
     # For now, we'll encode it in JWT
@@ -413,11 +432,14 @@ def forgot_password():
 
     send_email(user.email, "Password Reset Request", email_body)
 
-    return jsonify(
-        {
-            "message": "If an account exists with this email, a password reset link has been sent."
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "message": "If an account exists with this email, a password reset link has been sent."
+            }
+        ),
+        200,
+    )
 
 
 @bp.route("/api/auth/reset-password", methods=["POST"])
@@ -439,9 +461,10 @@ def reset_password():
         return jsonify({"error": "Password and confirm password are required"}), 400
 
     if password != confirm_password:
-        return jsonify(
-            {"errors": {"confirm_password": ["Passwords do not match"]}}
-        ), 400
+        return (
+            jsonify({"errors": {"confirm_password": ["Passwords do not match"]}}),
+            400,
+        )
 
     # Validate password strength
     password_check = validate_password_strength(password)
@@ -461,11 +484,14 @@ def reset_password():
     user.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
     db.session.commit()
 
-    return jsonify(
-        {
-            "message": "Password reset successfully. You can now log in with your new password."
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "message": "Password reset successfully. You can now log in with your new password."
+            }
+        ),
+        200,
+    )
 
 
 @bp.route("/api/auth/refresh", methods=["POST"])
@@ -487,17 +513,20 @@ def refresh_token():
     # Generate new token
     new_token = generate_token(user.user_id)
 
-    return jsonify(
-        {
-            "token": new_token,
-            "user": {
-                "id": user.user_id,
-                "email": user.email,
-                "is_verified": user.is_verified,
-                "has_profile": user.profile is not None,
-            },
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "token": new_token,
+                "user": {
+                    "id": user.user_id,
+                    "email": user.email,
+                    "is_verified": user.is_verified,
+                    "has_profile": user.profile is not None,
+                },
+            }
+        ),
+        200,
+    )
 
 
 @bp.route("/api/auth/me", methods=["GET"])
@@ -512,16 +541,19 @@ def get_current_user():
         profile_name = user.profile.name
         profile_picture = user.profile.profile_picture
 
-    return jsonify(
-        {
-            "id": user.user_id,
-            "email": user.email,
-            "is_verified": user.is_verified,
-            "has_profile": user.profile is not None,
-            "name": profile_name,
-            "profile_picture": profile_picture,
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "id": user.user_id,
+                "email": user.email,
+                "is_verified": user.is_verified,
+                "has_profile": user.profile is not None,
+                "name": profile_name,
+                "profile_picture": profile_picture,
+            }
+        ),
+        200,
+    )
 
 
 @bp.route("/api/profile", methods=["GET"])
@@ -557,9 +589,10 @@ def create_profile():
 
     interests_list = [i.strip() for i in form.interests.data.split(",") if i.strip()]
     if len(interests_list) < 3:
-        return jsonify(
-            {"errors": {"interests": ["Please add at least 3 interests"]}}
-        ), 400
+        return (
+            jsonify({"errors": {"interests": ["Please add at least 3 interests"]}}),
+            400,
+        )
 
     profile = Profile(
         user_id=user.user_id,
@@ -595,34 +628,41 @@ def update_profile():
     data["interests"] = data.get("interests", [])
 
     # Handle partial updates - only validate provided fields
-    errors = {}
-    
-    if 'name' in data and data['name']:
-        profile.name = data['name']
-    if 'age' in data:
-        profile.age = data['age']
-    if 'bio' in data:
-        profile.bio = data['bio']
-    if 'interests' in data:
-        interests_list = [i.strip() for i in data['interests'] if isinstance(data['interests'], list) or (isinstance(data['interests'], str) and i.strip())]
-        if data['interests'] and isinstance(data['interests'], str):
-            interests_list = [i.strip() for i in data['interests'].split(",") if i.strip()]
+
+    if "name" in data and data["name"]:
+        profile.name = data["name"]
+    if "age" in data:
+        profile.age = data["age"]
+    if "bio" in data:
+        profile.bio = data["bio"]
+    if "interests" in data:
+        interests_list = [
+            i.strip()
+            for i in data["interests"]
+            if isinstance(data["interests"], list)
+            or (isinstance(data["interests"], str) and i.strip())
+        ]
+        if data["interests"] and isinstance(data["interests"], str):
+            interests_list = [
+                i.strip() for i in data["interests"].split(",") if i.strip()
+            ]
         if len(interests_list) < 3 and interests_list:
-            return jsonify(
-                {"errors": {"interests": ["Please add at least 3 interests"]}}
-            ), 400
+            return (
+                jsonify({"errors": {"interests": ["Please add at least 3 interests"]}}),
+                400,
+            )
         if interests_list:
             profile.interests = interests_list
-    if 'gender' in data and data['gender']:
-        profile.gender = data['gender']
-    if 'gender_preference' in data and data['gender_preference']:
-        profile.gender_preference = data['gender_preference']
-    if 'relationship_goal' in data and data['relationship_goal']:
-        profile.relationship_goal = data['relationship_goal']
-    if 'occupation' in data:
-        profile.occupation = data['occupation'] if data['occupation'] else None
-    if 'visibility' in data:
-        profile.visibility = data['visibility']
+    if "gender" in data and data["gender"]:
+        profile.gender = data["gender"]
+    if "gender_preference" in data and data["gender_preference"]:
+        profile.gender_preference = data["gender_preference"]
+    if "relationship_goal" in data and data["relationship_goal"]:
+        profile.relationship_goal = data["relationship_goal"]
+    if "occupation" in data:
+        profile.occupation = data["occupation"] if data["occupation"] else None
+    if "visibility" in data:
+        profile.visibility = data["visibility"]
 
     db.session.commit()
 
@@ -662,9 +702,10 @@ def upload_picture():
         profile.profile_picture = filename
         db.session.commit()
 
-        return jsonify(
-            {"message": "Profile picture uploaded", "filename": filename}
-        ), 200
+        return (
+            jsonify({"message": "Profile picture uploaded", "filename": filename}),
+            200,
+        )
 
     return jsonify({"error": "Invalid file type"}), 400
 

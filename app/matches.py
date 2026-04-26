@@ -1,12 +1,9 @@
-import os
-from datetime import datetime, timedelta
-
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, jsonify, request
 
 from app import db
-from app.models import Bookmark, Like, Match, Notification, Profile, User
+from app.models import Bookmark, Like, Match, Notification, Profile
 from app.views import get_user_from_token
-from app.notifications import email_notification, send_email
+from app.notifications import email_notification
 
 bp = Blueprint("matches", __name__, url_prefix="/api/matches")
 
@@ -97,7 +94,7 @@ def create_notification(user_id, notification_type, message, from_user_id=None):
         from_user_id=from_user_id,
     )
     db.session.add(notification)
-    
+
     # Email Notification Added
     email_notification(user_id, notification_type)
 
@@ -121,20 +118,26 @@ def get_potential_matches():
 
     # Get IDs of users we've already interacted with
     interacted_ids = (
-        db.session.query(Like.from_user_id).filter(Like.from_user_id == user.user_id).all()
+        db.session.query(Like.from_user_id)
+        .filter(Like.from_user_id == user.user_id)
+        .all()
     )
     interacted_ids = [i[0] for i in interacted_ids]
 
     # Get existing matches
     match_ids = []
-    as_user1 = db.session.query(Match.user2_id).filter(Match.user1_id == user.user_id).all()
-    as_user2 = db.session.query(Match.user1_id).filter(Match.user2_id == user.user_id).all()
+    as_user1 = (
+        db.session.query(Match.user2_id).filter(Match.user1_id == user.user_id).all()
+    )
+    as_user2 = (
+        db.session.query(Match.user1_id).filter(Match.user2_id == user.user_id).all()
+    )
     match_ids = [m[0] for m in as_user1] + [m[0] for m in as_user2]
 
     # Get potential matches (public profiles, not interacted, not matched)
     query = Profile.query.filter(
         Profile.user_id != user.user_id,
-        Profile.visibility == True,
+        Profile.visibility,
         ~Profile.user_id.in_(interacted_ids) if interacted_ids else True,
         ~Profile.user_id.in_(match_ids) if match_ids else True,
     )
@@ -175,14 +178,18 @@ def get_matches():
 
     # Get matches where user is either user1 or user2
     matches = (
-        Match.query.filter((Match.user1_id == user.user_id) | (Match.user2_id == user.user_id))
+        Match.query.filter(
+            (Match.user1_id == user.user_id) | (Match.user2_id == user.user_id)
+        )
         .order_by(Match.created_at.desc())
         .all()
     )
 
     result = []
     for match in matches:
-        other_user_id = match.user2_id if match.user1_id == user.user_id else match.user1_id
+        other_user_id = (
+            match.user2_id if match.user1_id == user.user_id else match.user1_id
+        )
         other_profile = Profile.query.filter_by(user_id=other_user_id).first()
 
         if other_profile:
@@ -190,9 +197,9 @@ def get_matches():
                 {
                     "match_id": match.match_id,
                     "profile": other_profile.to_dict(),
-                    "matched_at": match.created_at.isoformat()
-                    if match.created_at
-                    else None,
+                    "matched_at": (
+                        match.created_at.isoformat() if match.created_at else None
+                    ),
                 }
             )
 
@@ -212,7 +219,9 @@ def like_user(to_user_id):
         return jsonify({"error": "User not found"}), 404
 
     # Check if already liked
-    existing = Like.query.filter_by(from_user_id=user.user_id, to_user_id=to_user_id).first()
+    existing = Like.query.filter_by(
+        from_user_id=user.user_id, to_user_id=to_user_id
+    ).first()
 
     if existing:
         existing.status = "liked"
@@ -224,9 +233,9 @@ def like_user(to_user_id):
     is_mutual = check_mutual_like(user.user_id, to_user_id)
 
     if is_mutual:
-        
+
         # Create match
-        match = create_match(user.user_id, to_user_id)
+        create_match(user.user_id, to_user_id)
 
         # Create notifications for both
         from_profile = Profile.query.filter_by(user_id=user.user_id).first()
@@ -258,18 +267,24 @@ def like_user(to_user_id):
                 {"user_id": to_user_id, "profile": to_profile.to_dict()},
             )
 
-        return jsonify(
-            {
-                "message": "It's a match!",
-                "match": True,
-                "matched_profile": to_profile.to_dict(),
-            }
-        ), 200
+        return (
+            jsonify(
+                {
+                    "message": "It's a match!",
+                    "match": True,
+                    "matched_profile": to_profile.to_dict(),
+                }
+            ),
+            200,
+        )
     else:
         # Just notify the liked user
         from_profile = Profile.query.filter_by(user_id=user.user_id).first()
         create_notification(
-            to_user_id, "like", f"{from_profile.name} liked you!", from_user_id=user.user_id
+            to_user_id,
+            "like",
+            f"{from_profile.name} liked you!",
+            from_user_id=user.user_id,
         )
 
         # Emit like event via WebSocket
@@ -292,7 +307,9 @@ def dislike_user(to_user_id):
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    existing = Like.query.filter_by(from_user_id=user.user_id, to_user_id=to_user_id).first()
+    existing = Like.query.filter_by(
+        from_user_id=user.user_id, to_user_id=to_user_id
+    ).first()
 
     if existing:
         existing.status = "disliked"
@@ -312,7 +329,9 @@ def pass_user(to_user_id):
     if not user:
         return jsonify({"error": "Authentication required"}), 401
 
-    existing = Like.query.filter_by(from_user_id=user.user_id, to_user_id=to_user_id).first()
+    existing = Like.query.filter_by(
+        from_user_id=user.user_id, to_user_id=to_user_id
+    ).first()
 
     if existing:
         existing.status = "passed"
@@ -366,7 +385,7 @@ def search_profiles():
     occupation = data.get("occupation", "").strip().lower()
     sort_by = data.get("sort_by", "newest")
 
-    query = Profile.query.filter(Profile.user_id != user.user_id, Profile.visibility == True)
+    query = Profile.query.filter(Profile.user_id != user.user_id, Profile.visibility)
 
     if age_min:
         query = query.filter(Profile.age >= age_min)

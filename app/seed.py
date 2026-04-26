@@ -1,19 +1,18 @@
 import os
 import sys
+import random
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-instance_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "instance")
+from app import bcrypt, create_app, db
+from app.models import Bookmark, Like, Match, Message, Notification, Profile, User
+
+instance_dir = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "instance"
+)
 if not os.path.exists(instance_dir):
     os.makedirs(instance_dir)
     print(f"Created instance folder: {instance_dir}")
-
-import random
-
-from werkzeug.security import generate_password_hash
-
-from app import bcrypt, create_app, db
-from app.models import Bookmark, Like, Match, Message, Notification, Profile, User
 
 app = create_app()
 
@@ -151,7 +150,9 @@ def seed():
             others = [u for u in users if u.user_id != user.user_id]
             bookmarked = random.choice(others)
 
-            bookmark = Bookmark(user_id=user.user_id, bookmarked_user_id=bookmarked.user_id)
+            bookmark = Bookmark(
+                user_id=user.user_id, bookmarked_user_id=bookmarked.user_id
+            )
             db.session.add(bookmark)
 
         db.session.commit()

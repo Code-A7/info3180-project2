@@ -1,13 +1,13 @@
-import api from './api';
+import api from "./api";
 
 export const notificationService = {
   async getNotifications() {
-    const response = await api.get('/api/notifications');
+    const response = await api.get("/api/notifications");
     return response.data;
   },
 
   async getUnreadCount() {
-    const response = await api.get('/api/notifications/unread-count');
+    const response = await api.get("/api/notifications/unread-count");
     return response.data;
   },
 
@@ -17,9 +17,9 @@ export const notificationService = {
   },
 
   async markAllAsRead() {
-    const response = await api.put('/api/notifications/read-all');
+    const response = await api.put("/api/notifications/read-all");
     return response.data;
-  }
+  },
 };
 
 export default notificationService;

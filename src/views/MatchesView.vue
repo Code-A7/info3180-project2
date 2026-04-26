@@ -1,22 +1,30 @@
 <template>
   <div class="matches-container">
     <h1>Your Matches</h1>
-    
+
     <div v-if="loading" class="loading">Loading matches...</div>
-    
+
     <div v-else-if="matches.length === 0" class="no-matches">
       <h3>No matches yet</h3>
       <p>Start browsing to find your perfect match!</p>
-      <router-link to="/browse" class="btn-primary">Browse Profiles</router-link>
+      <router-link to="/browse" class="btn-primary"
+        >Browse Profiles</router-link
+      >
     </div>
-    
+
     <div v-else class="matches-grid">
       <div v-for="match in matches" :key="match.match_id" class="match-card">
         <div class="match-image">
-          <img v-if="match.profile.profile_picture" :src="`http://localhost:5000/uploads/${match.profile.profile_picture}`" alt="Profile" />
-          <div v-else class="avatar-placeholder">{{ match.profile.name?.charAt(0) }}</div>
+          <img
+            v-if="match.profile.profile_picture"
+            :src="`http://localhost:5000/uploads/${match.profile.profile_picture}`"
+            alt="Profile"
+          />
+          <div v-else class="avatar-placeholder">
+            {{ match.profile.name?.charAt(0) }}
+          </div>
         </div>
-        
+
         <div class="match-info">
           <h3>{{ match.profile.name }}, {{ match.profile.age }}</h3>
           <p class="matched-at">Matched {{ formatDate(match.matched_at) }}</p>
@@ -27,8 +35,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import matchService from '../services/matchService';
+import { ref, onMounted } from "vue";
+import matchService from "../services/matchService";
 
 const matches = ref([]);
 const loading = ref(true);
@@ -38,19 +46,19 @@ const loadMatches = async () => {
   try {
     matches.value = await matchService.getMatches();
   } catch (error) {
-    console.error('Failed to load matches:', error);
+    console.error("Failed to load matches:", error);
   } finally {
     loading.value = false;
   }
 };
 
 const formatDate = (dateString) => {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = new Date(dateString);
   const now = new Date();
   const diff = now - date;
-  
-  if (diff < 60000) return 'just now';
+
+  if (diff < 60000) return "just now";
   if (diff < 3600000) return `${Math.floor(diff / 60000)} minutes ago`;
   if (diff < 86400000) return `${Math.floor(diff / 3600000)} hours ago`;
   if (diff < 604800000) return `${Math.floor(diff / 86400000)} days ago`;
@@ -87,20 +95,20 @@ h1 {
   text-center: center;
   padding: 3.75rem;
   background: white;
-  dark:bg-gray-800;
+  dark: bg-gray-800;
   border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .no-matches h3 {
   color: #111827;
-  dark:text-white;
+  dark: text-white;
   margin-bottom: 0.5rem;
 }
 
 .no-matches p {
   color: #6b7280;
-  dark:text-gray-400;
+  dark: text-gray-400;
   margin-bottom: 1.25rem;
 }
 
@@ -128,24 +136,24 @@ h1 {
 
 .match-card {
   background: white;
-  dark:bg-gray-800;
+  dark: bg-gray-800;
   border-radius: 1rem;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s;
   cursor: pointer;
 }
 
 .match-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .match-image {
   width: 100%;
   height: 200px;
   background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-  dark:bg-gray-700;
+  dark: bg-gray-700;
   display: flex;
   align-items: center;
   justify-content: center;

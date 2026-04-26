@@ -277,7 +277,7 @@ export const authService = {
       }
     } catch (e) {
       console.error("Error storing auth data:", e);
-      throw new Error("Failed to store authentication data");
+      throw new Error("Failed to store authentication data", { cause: e });
     }
   },
 

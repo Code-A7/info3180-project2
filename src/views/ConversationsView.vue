@@ -4,43 +4,53 @@
       <h1>Messages</h1>
       <p>Your conversations</p>
     </div>
-    
+
     <div v-if="loading" class="loading">
       <div class="loading-spinner"></div>
       <p>Loading conversations...</p>
     </div>
-    
+
     <div v-else-if="conversations.length === 0" class="no-conversations">
       <div class="no-conversations-icon">💬</div>
       <h3>No conversations yet</h3>
       <p>Match with someone to start chatting!</p>
-      <router-link to="/browse" class="btn-primary">Browse Profiles</router-link>
+      <router-link to="/browse" class="btn-primary"
+        >Browse Profiles</router-link
+      >
     </div>
-    
+
     <div v-else class="conversations-list">
-      <div 
-        v-for="conv in conversations" 
-        :key="conv.user_id" 
+      <div
+        v-for="conv in conversations"
+        :key="conv.user_id"
         class="conversation-item"
         :class="{ unread: conv.unread_count > 0 }"
         @click="openChat(conv.user_id)"
       >
         <div class="conversation-avatar">
-          <img v-if="conv.profile_picture" :src="`http://localhost:5000/uploads/${conv.profile_picture}`" alt="Profile" />
-          <div v-else class="avatar-placeholder">{{ conv.user_name?.charAt(0) }}</div>
+          <img
+            v-if="conv.profile_picture"
+            :src="`http://localhost:5000/uploads/${conv.profile_picture}`"
+            alt="Profile"
+          />
+          <div v-else class="avatar-placeholder">
+            {{ conv.user_name?.charAt(0) }}
+          </div>
           <div v-if="conv.unread_count > 0" class="online-indicator"></div>
         </div>
-        
+
         <div class="conversation-content">
           <div class="conversation-header">
             <h3>{{ conv.user_name }}</h3>
             <span class="time">{{ formatTime(conv.last_message_at) }}</span>
           </div>
-          <p class="last-message">{{ conv.last_message || 'Start a conversation!' }}</p>
+          <p class="last-message">
+            {{ conv.last_message || "Start a conversation!" }}
+          </p>
         </div>
-        
+
         <div v-if="conv.unread_count > 0" class="unread-badge">
-          {{ conv.unread_count > 9 ? '9+' : conv.unread_count }}
+          {{ conv.unread_count > 9 ? "9+" : conv.unread_count }}
         </div>
       </div>
     </div>
@@ -48,10 +58,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
-import messageService from '../services/messageService';
-import socketService from '../services/socketService';
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import messageService from "../services/messageService";
+import socketService from "../services/socketService";
 
 const router = useRouter();
 const conversations = ref([]);
@@ -61,7 +71,7 @@ const loadConversations = async () => {
   try {
     conversations.value = await messageService.getConversations();
   } catch (error) {
-    console.error('Failed to load conversations:', error);
+    console.error("Failed to load conversations:", error);
   } finally {
     loading.value = false;
   }
@@ -72,12 +82,12 @@ const openChat = (userId) => {
 };
 
 const formatTime = (dateString) => {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = new Date(dateString);
   const now = new Date();
   const diff = now - date;
-  
-  if (diff < 60000) return 'now';
+
+  if (diff < 60000) return "now";
   if (diff < 3600000) return `${Math.floor(diff / 60000)}m`;
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`;
   if (diff < 604800000) return `${Math.floor(diff / 86400000)}d`;
@@ -90,11 +100,11 @@ const handleNewMessage = (data) => {
 
 onMounted(() => {
   loadConversations();
-  socketService.on('new_message', handleNewMessage);
+  socketService.on("new_message", handleNewMessage);
 });
 
 onUnmounted(() => {
-  socketService.off('new_message', handleNewMessage);
+  socketService.off("new_message", handleNewMessage);
 });
 </script>
 
@@ -351,7 +361,9 @@ onUnmounted(() => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading p {

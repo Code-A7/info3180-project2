@@ -1,4 +1,4 @@
-import api from './api';
+import api from "./api";
 
 export const matchService = {
   async getPotentialMatches(filters = {}) {
@@ -8,7 +8,7 @@ export const matchService = {
   },
 
   async getMatches() {
-    const response = await api.get('/api/matches');
+    const response = await api.get("/api/matches");
     return response.data;
   },
 
@@ -30,7 +30,7 @@ export const matchService = {
   async getMatchScore(userId) {
     const response = await api.get(`/api/matches/score/${userId}`);
     return response.data;
-  }
+  },
 };
 
 export default matchService;

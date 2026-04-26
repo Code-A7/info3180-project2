@@ -2,14 +2,29 @@
   <div class="chat-container">
     <div class="chat-header">
       <button class="back-btn" @click="goBack">
-        <svg xmlns="http://www.w3.org/2000/svg" class="back-icon" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="back-icon"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+            clip-rule="evenodd"
+          />
         </svg>
       </button>
-      <div class="chat-user-info" v-if="otherUser">
+      <div v-if="otherUser" class="chat-user-info">
         <div class="avatar">
-          <img v-if="otherUser.profile_picture" :src="`http://localhost:5000/uploads/${otherUser.profile_picture}`" alt="Profile" />
-          <div v-else class="avatar-placeholder">{{ otherUser.name?.charAt(0) }}</div>
+          <img
+            v-if="otherUser.profile_picture"
+            :src="`http://localhost:5000/uploads/${otherUser.profile_picture}`"
+            alt="Profile"
+          />
+          <div v-else class="avatar-placeholder">
+            {{ otherUser.name?.charAt(0) }}
+          </div>
         </div>
         <div class="user-details">
           <h2>{{ otherUser.name }}</h2>
@@ -17,39 +32,62 @@
         </div>
       </div>
     </div>
-    
-    <div class="messages-container" ref="messagesContainer">
+
+    <div ref="messagesContainer" class="messages-container">
       <div v-if="loading" class="loading">
         <div class="loading-spinner"></div>
         <p>Loading messages...</p>
       </div>
-      
+
       <div v-else-if="hasMore" class="load-more">
-        <button @click="loadMore" class="load-more-btn">Load earlier messages</button>
+        <button class="load-more-btn" @click="loadMore">
+          Load earlier messages
+        </button>
       </div>
-      
-      <div 
-        v-for="message in messages" 
-        :key="message.id" 
+
+      <div
+        v-for="message in messages"
+        :key="message.id"
         class="message"
-        :class="{ sent: message.sender_id === currentUserId, received: message.sender_id !== currentUserId }"
+        :class="{
+          sent: message.sender_id === currentUserId,
+          received: message.sender_id !== currentUserId,
+        }"
       >
         <div class="message-bubble">
           <p>{{ message.content }}</p>
           <div class="message-meta">
             <span class="time">{{ formatTime(message.created_at) }}</span>
             <span v-if="message.sender_id === currentUserId" class="status">
-              <svg v-if="message.read_at" xmlns="http://www.w3.org/2000/svg" class="read-icon" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+              <svg
+                v-if="message.read_at"
+                xmlns="http://www.w3.org/2000/svg"
+                class="read-icon"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                />
               </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="read-icon" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              <svg
+                v-else
+                xmlns="http://www.w3.org/2000/svg"
+                class="read-icon"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                />
               </svg>
             </span>
           </div>
         </div>
       </div>
-      
+
       <div v-if="typing" class="typing-indicator">
         <div class="typing-dots">
           <span></span>
@@ -59,19 +97,26 @@
         <span>{{ typingUserName }} is typing...</span>
       </div>
     </div>
-    
+
     <form class="message-form" @submit.prevent="sendMessage">
-      <input 
-        v-model="newMessage" 
-        type="text" 
+      <input
+        v-model="newMessage"
+        type="text"
         placeholder="Type a message..."
-        @input="handleTyping"
         maxlength="1000"
         class="message-input"
+        @input="handleTyping"
       />
       <button type="submit" :disabled="!newMessage.trim()" class="send-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" class="send-icon" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="send-icon"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"
+          />
         </svg>
       </button>
     </form>
@@ -79,11 +124,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import messageService from '../services/messageService';
-import socketService from '../services/socketService';
-import authService from '../services/authService';
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import messageService from "../services/messageService";
+import socketService from "../services/socketService";
+import authService from "../services/authService";
 
 const route = useRoute();
 const router = useRouter();
@@ -93,10 +138,10 @@ const currentUserId = authService.getStoredUser()?.id;
 
 const messages = ref([]);
 const otherUser = ref(null);
-const newMessage = ref('');
+const newMessage = ref("");
 const loading = ref(true);
 const typing = ref(false);
-const typingUserName = ref('');
+const typingUserName = ref("");
 const hasMore = ref(true);
 const messagesContainer = ref(null);
 const typingTimeout = ref(null);
@@ -116,9 +161,9 @@ const loadMessages = async (page = 1, prepend = false) => {
     await nextTick();
     if (!prepend) scrollToBottom();
   } catch (error) {
-    console.error('Failed to load messages:', error);
+    console.error("Failed to load messages:", error);
     if (error.response?.status === 403) {
-      router.push('/matches');
+      router.push("/matches");
     }
   } finally {
     loading.value = false;
@@ -132,25 +177,25 @@ const loadMore = async () => {
 
 const sendMessage = async () => {
   if (!newMessage.value.trim()) return;
-  
+
   const content = newMessage.value.trim();
-  newMessage.value = '';
-  
+  newMessage.value = "";
+
   try {
     const message = await messageService.sendMessage(otherUserId, content);
     messages.value.unshift(message);
     await nextTick();
     scrollToBottom();
   } catch (error) {
-    console.error('Failed to send message:', error);
+    console.error("Failed to send message:", error);
   }
 };
 
 const handleTyping = () => {
   if (typingSendTimeout) clearTimeout(typingSendTimeout);
-  
+
   messageService.sendTypingStatus(otherUserId, true);
-  
+
   typingSendTimeout = setTimeout(() => {
     messageService.sendTypingStatus(otherUserId, false);
   }, 2000);
@@ -164,7 +209,7 @@ const handleNewMessage = (data) => {
       receiver_id: currentUserId,
       content: data.content,
       created_at: data.created_at,
-      read_at: null
+      read_at: null,
     });
     nextTick(() => scrollToBottom());
   }
@@ -178,7 +223,7 @@ const handleTypingStatus = (data) => {
 };
 
 const handleMessageRead = (data) => {
-  const message = messages.value.find(m => m.id === data.message_id);
+  const message = messages.value.find((m) => m.id === data.message_id);
   if (message) {
     message.read_at = data.read_at;
   }
@@ -191,26 +236,26 @@ const scrollToBottom = () => {
 };
 
 const formatTime = (dateString) => {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = new Date(dateString);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
 const goBack = () => {
-  router.push('/conversations');
+  router.push("/conversations");
 };
 
 onMounted(() => {
   loadMessages();
-  socketService.on('new_message', handleNewMessage);
-  socketService.on('user_typing', handleTypingStatus);
-  socketService.on('message_read', handleMessageRead);
+  socketService.on("new_message", handleNewMessage);
+  socketService.on("user_typing", handleTypingStatus);
+  socketService.on("message_read", handleMessageRead);
 });
 
 onUnmounted(() => {
-  socketService.off('new_message', handleNewMessage);
-  socketService.off('user_typing', handleTypingStatus);
-  socketService.off('message_read', handleMessageRead);
+  socketService.off("new_message", handleNewMessage);
+  socketService.off("user_typing", handleTypingStatus);
+  socketService.off("message_read", handleMessageRead);
   messageService.sendTypingStatus(otherUserId, false);
 });
 </script>
@@ -443,13 +488,25 @@ onUnmounted(() => {
   animation: typing 1.4s infinite ease-in-out;
 }
 
-.typing-dots span:nth-child(1) { animation-delay: 0s; }
-.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+.typing-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+.typing-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes typing {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-4px); }
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
 }
 
 .message-form {
@@ -536,7 +593,9 @@ onUnmounted(() => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading p {

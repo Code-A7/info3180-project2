@@ -1,21 +1,21 @@
-import api from './api';
+import api from "./api";
 
 export const messageService = {
   async getConversations() {
-    const response = await api.get('/api/messages');
+    const response = await api.get("/api/messages");
     return response.data;
   },
 
   async getMessageHistory(otherUserId, page = 1, perPage = 50) {
     const response = await api.get(`/api/messages/${otherUserId}`, {
-      params: { page, per_page: perPage }
+      params: { page, per_page: perPage },
     });
     return response.data;
   },
 
   async sendMessage(otherUserId, content) {
     const response = await api.post(`/api/messages/${otherUserId}`, {
-      content
+      content,
     });
     return response.data;
   },
@@ -26,16 +26,16 @@ export const messageService = {
   },
 
   async getUnreadCount() {
-    const response = await api.get('/api/messages/unread');
+    const response = await api.get("/api/messages/unread");
     return response.data;
   },
 
   async sendTypingStatus(otherUserId, isTyping) {
     const response = await api.post(`/api/messages/typing/${otherUserId}`, {
-      is_typing: isTyping
+      is_typing: isTyping,
     });
     return response.data;
-  }
+  },
 };
 
 export default messageService;
