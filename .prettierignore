@@ -1,0 +1,19 @@
+# Ignore node_modules and virtual environments
+node_modules
+.venv
+
+# Ignore build and output directories
+dist
+coverage
+htmlcov
+playwright-report
+
+# Ignore IDE/config files
+.vscode
+.idea
+
+# Ignore docs (they may have specific formatting)
+docs
+
+# Ignore Python virtual environment files
+*.egg-info
