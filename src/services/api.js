@@ -1,9 +1,25 @@
+/**
+ * API service with axios configuration
+ *
+ * This module provides a configured axios instance with:
+ * - Request/response interceptors
+ * - Automatic token refresh handling
+ * - Error handling and retry logic
+ * - Authentication state management
+ */
+
 import axios from "axios";
 
 // Token refresh state
 let isRefreshing = false;
 let failedQueue = [];
 
+/**
+ * Process queued requests after token refresh
+ *
+ * @param {Error|null} error - Error from refresh attempt, or null if successful
+ * @param {string|null} token - New token if refresh was successful
+ */
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -16,12 +32,20 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// Get token from localStorage or sessionStorage
+/**
+ * Get authentication token from storage
+ *
+ * @returns {string|null} Authentication token or null if not found
+ */
 const getToken = () => {
   return localStorage.getItem("token") || sessionStorage.getItem("token");
 };
 
-// Get user from storage
+/**
+ * Get user data from storage
+ *
+ * @returns {Object|null} Parsed user object or null if not found/invalid
+ */
 const getUser = () => {
   try {
     const user = localStorage.getItem("user") || sessionStorage.getItem("user");
@@ -32,7 +56,9 @@ const getUser = () => {
   }
 };
 
-// Clear all auth data
+/**
+ * Clear all authentication data from storage
+ */
 const clearAuthData = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
@@ -41,6 +67,9 @@ const clearAuthData = () => {
   sessionStorage.removeItem("user");
 };
 
+/**
+ * Configured axios instance for API requests
+ */
 const api = axios.create({
   baseURL: "/",
   headers: {
@@ -53,6 +82,12 @@ const api = axios.create({
 
 // Request interceptor - add auth token
 api.interceptors.request.use(
+  /**
+   * Add authentication token to requests and track timing
+   *
+   * @param {Object} config - Axios request configuration
+   * @returns {Object} Modified request configuration
+   */
   (config) => {
     const token = getToken();
     if (token) {
@@ -64,6 +99,12 @@ api.interceptors.request.use(
 
     return config;
   },
+  /**
+   * Handle request errors
+   *
+   * @param {Error} error - Request error
+   * @returns {Promise} Rejected promise with error
+   */
   (error) => {
     console.error("Request error:", error);
     return Promise.reject(error);

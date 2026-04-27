@@ -1,3 +1,10 @@
+"""
+Forms module for the dating application.
+
+This module contains all the Flask-WTF forms used in the application,
+including registration, login, and profile forms.
+"""
+
 from flask_wtf import FlaskForm
 from wtforms import (
     BooleanField,
@@ -21,6 +28,15 @@ from app.models import User
 
 
 class RegistrationForm(FlaskForm):
+    """
+    Form for user registration.
+
+    Fields:
+        email: User's email address
+        password: User's password
+        confirm_password: Password confirmation
+    """
+
     email = StringField(
         "Email",
         validators=[
@@ -47,12 +63,29 @@ class RegistrationForm(FlaskForm):
     )
 
     def validate_email(self, email):
+        """
+        Validate that the email is not already registered.
+
+        Args:
+            email: The email field to validate
+
+        Raises:
+            ValidationError: If the email is already registered
+        """
         user = User.query.filter_by(email=email.data).first()
         if user:
             raise ValidationError("This email is already registered")
 
 
 class LoginForm(FlaskForm):
+    """
+    Form for user login.
+
+    Fields:
+        email: User's email address
+        password: User's password
+    """
+
     email = StringField(
         "Email",
         validators=[
@@ -66,6 +99,21 @@ class LoginForm(FlaskForm):
 
 
 class ProfileForm(FlaskForm):
+    """
+    Form for user profile creation and editing.
+
+    Fields:
+        name: User's name
+        age: User's age
+        bio: User's biography
+        interests: User's interests (comma separated)
+        gender: User's gender
+        gender_preference: User's gender preference for matches
+        relationship_goal: User's relationship goal
+        occupation: User's occupation
+        visibility: Whether profile is public
+    """
+
     name = StringField(
         "Name",
         validators=[

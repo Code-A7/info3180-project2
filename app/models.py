@@ -1,3 +1,10 @@
+"""
+Database models for the dating application.
+
+This module contains all SQLAlchemy models representing the application's
+data entities, including users, profiles, matches, messages, and notifications.
+"""
+
 import secrets
 import string
 from datetime import datetime, timezone
@@ -6,16 +13,45 @@ from app import db
 
 
 def utc_now():
+    """
+    Get current UTC timestamp.
+
+    Returns:
+        Current datetime in UTC timezone
+    """
     return datetime.now(timezone.utc)
 
 
 def generate_verification_token():
+    """
+    Generate a random verification token.
+
+    Returns:
+        Random 64-character alphanumeric string
+    """
     return "".join(
         secrets.choice(string.ascii_letters + string.digits) for _ in range(64)
     )
 
 
 class User(db.Model):
+    """
+    User model representing application users.
+
+    Attributes:
+        user_id: Primary key
+        email: User's email address (unique)
+        password_hash: Hashed password
+        is_verified: Email verification status
+        verification_token: Token for email verification
+        created_at: Account creation timestamp
+        last_active: Last activity timestamp
+        profile: One-to-one relationship with Profile
+        likes_sent: Likes sent by this user
+        likes_received: Likes received by this user
+        notifications: User's notifications
+    """
+
     __tablename__ = "users"
 
     user_id = db.Column(db.Integer, primary_key=True)
@@ -61,6 +97,28 @@ class User(db.Model):
 
 
 class Profile(db.Model):
+    """
+    Profile model representing user profiles.
+
+    Attributes:
+        profile_id: Primary key
+        user_id: Foreign key to User
+        name: User's name
+        age: User's age
+        bio: User's biography
+        preferred_age_min: Minimum age preference for matches
+        preferred_age_max: Maximum age preference for matches
+        interests: List of user interests
+        profile_picture: URL/path to profile picture
+        visibility: Whether profile is public
+        gender: User's gender
+        gender_preference: Gender preference for matches
+        relationship_goal: User's relationship goal
+        occupation: User's occupation
+        created_at: Profile creation timestamp
+        updated_at: Last update timestamp
+    """
+
     __tablename__ = "profiles"
     __table_args__ = (
         db.Index("ix_profiles_visibility_created_at", "visibility", "created_at"),
@@ -121,6 +179,17 @@ class Profile(db.Model):
 
 
 class Like(db.Model):
+    """
+    Like model representing user likes/dislikes.
+
+    Attributes:
+        like_id: Primary key
+        from_user_id: User who sent the like
+        to_user_id: User who received the like
+        status: Type of interaction (liked, disliked, passed)
+        created_at: Timestamp when like was created
+    """
+
     __tablename__ = "likes"
 
     like_id = db.Column(db.Integer, primary_key=True)
@@ -145,6 +214,18 @@ class Like(db.Model):
 
 
 class Match(db.Model):
+    """
+    Match model representing mutual matches between users.
+
+    Attributes:
+        match_id: Primary key
+        user1_id: First user in the match
+        user2_id: Second user in the match
+        created_at: Timestamp when match was created
+        user1: Relationship to first user
+        user2: Relationship to second user
+    """
+
     __tablename__ = "matches"
 
     match_id = db.Column(db.Integer, primary_key=True)
@@ -172,6 +253,19 @@ class Match(db.Model):
 
 
 class Notification(db.Model):
+    """
+    Notification model representing user notifications.
+
+    Attributes:
+        notification_id: Primary key
+        user_id: User who receives the notification
+        type: Type of notification (match, like, message)
+        message: Notification message content
+        from_user_id: User who triggered the notification
+        is_read: Whether notification has been read
+        created_at: Timestamp when notification was created
+    """
+
     __tablename__ = "notifications"
     __table_args__ = (
         db.Index(
@@ -206,6 +300,20 @@ class Notification(db.Model):
 
 
 class Message(db.Model):
+    """
+    Message model representing private messages between users.
+
+    Attributes:
+        message_id: Primary key
+        sender_id: User who sent the message
+        receiver_id: User who received the message
+        content: Message content
+        created_at: Timestamp when message was created
+        read_at: Timestamp when message was read
+        sender: Relationship to sender user
+        receiver: Relationship to receiver user
+    """
+
     __tablename__ = "messages"
     __table_args__ = (
         db.Index("ix_messages_receiver_read", "receiver_id", "read_at"),
@@ -251,6 +359,13 @@ class Message(db.Model):
 
 
 class Bookmark(db.Model):
+    """
+    Bookmark model representing user bookmarks/favorites.
+
+    Attributes:
+        bookmark_id: Primary key
+    """
+
     __tablename__ = "bookmark"
 
     bookmark_id = db.Column(db.Integer, primary_key=True)

@@ -1,9 +1,16 @@
+"""
+Matches module for handling user matching functionality.
+
+This module contains all the logic for user matching, including match calculation,
+like/dislike handling, and match-related API endpoints.
+"""
+
 from flask import Blueprint, jsonify, request
 
 from app import db
 from app.models import Bookmark, Like, Match, Notification, Profile
-from app.views import get_user_from_token
 from app.notifications import email_notification
+from app.views import get_user_from_token
 
 bp = Blueprint("matches", __name__, url_prefix="/api/matches")
 
@@ -12,14 +19,33 @@ socket_emit = None
 
 
 def set_socket_emit(emit_func):
+    """
+    Set the WebSocket emit callback function.
+
+    Args:
+        emit_func: Function to use for emitting WebSocket events
+    """
     global socket_emit
     socket_emit = emit_func
 
 
 def calculate_match_score(current_user_profile, other_profile):
-    """Calculate match score between two profiles.
+    """
+    Calculate match score between two profiles.
 
-    Scoring:
+    This function calculates a compatibility score between two user profiles
+    based on various factors including age compatibility, shared interests,
+    relationship goals, and gender preferences.
+
+    Args:
+        current_user_profile: Profile of the current user
+        other_profile: Profile of the potential match
+
+    Returns:
+        Tuple of (score, details) where score is the compatibility score (0-100)
+        and details contains specific match information
+
+    Scoring breakdown:
     - Age compatibility: 0-20 points
     - Shared interests: 0-20 points (+10 per interest, max 2)
     - Relationship goal: 0-20 points
@@ -233,7 +259,6 @@ def like_user(to_user_id):
     is_mutual = check_mutual_like(user.user_id, to_user_id)
 
     if is_mutual:
-
         # Create match
         create_match(user.user_id, to_user_id)
 

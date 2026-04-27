@@ -1,14 +1,32 @@
+/**
+ * WebSocket service for real-time communication
+ *
+ * This module handles WebSocket connections, event handling,
+ * and browser notifications for real-time features like
+ * messages, matches, and notifications.
+ */
+
 import { io } from "socket.io-client";
 import authService from "./authService";
 
 let socket = null;
 
+/**
+ * Request browser notification permission
+ */
 const requestNotificationPermission = async () => {
   if ("Notification" in window && Notification.permission === "default") {
     await Notification.requestPermission();
   }
 };
 
+/**
+ * Show browser notification
+ *
+ * @param {string} title - Notification title
+ * @param {string} body - Notification body text
+ * @param {string} icon - Optional notification icon URL
+ */
 const showNotification = (title, body, icon) => {
   if ("Notification" in window && Notification.permission === "granted") {
     new Notification(title, {
@@ -19,6 +37,11 @@ const showNotification = (title, body, icon) => {
 };
 
 export const socketService = {
+  /**
+   * Connect to WebSocket server
+   *
+   * @returns {Object} Socket instance
+   */
   connect() {
     if (socket?.connected) return socket;
 

@@ -1,3 +1,10 @@
+"""
+Main application views and API endpoints.
+
+This module contains all the Flask blueprint routes for the main application,
+including authentication, user management, profile operations, and other core functionality.
+"""
+
 import os
 import re
 import smtplib
@@ -22,7 +29,16 @@ rate_limit_store = {}
 
 
 def rate_limit(max_requests=5, window_seconds=300):
-    """Rate limiting decorator for API endpoints"""
+    """
+    Rate limiting decorator for API endpoints.
+
+    Args:
+        max_requests: Maximum number of requests allowed in the time window
+        window_seconds: Time window in seconds for rate limiting
+
+    Returns:
+        Decorator function that enforces rate limits on the wrapped endpoint
+    """
 
     def decorator(f):
         @wraps(f)

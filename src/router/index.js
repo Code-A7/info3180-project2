@@ -1,3 +1,11 @@
+/**
+ * Vue Router configuration
+ *
+ * This file defines all application routes, their associated components,
+ * and authentication requirements. It also handles route guards for
+ * authentication and authorization.
+ */
+
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import { authService } from "../services/authService";

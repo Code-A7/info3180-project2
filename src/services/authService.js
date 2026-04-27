@@ -1,8 +1,22 @@
+/**
+ * Authentication service
+ *
+ * This module provides authentication-related utilities including
+ * password validation, user registration, login, and token management.
+ */
+
 import api from "./api";
 
 // Password validation utilities
 export const passwordValidation = {
+  /**
+   * Minimum password length requirement
+   */
   minLength: 8,
+
+  /**
+   * Regular expression patterns for password complexity requirements
+   */
   patterns: {
     uppercase: /[A-Z]/,
     lowercase: /[a-z]/,
@@ -10,6 +24,12 @@ export const passwordValidation = {
     special: /[!@#$%^&*(),.?":{}|<>]/,
   },
 
+  /**
+   * Validate password against complexity requirements
+   *
+   * @param {string} password - Password to validate
+   * @returns {Object} Validation result with isValid, errors, and strength
+   */
   validate(password) {
     const errors = [];
 
@@ -38,6 +58,12 @@ export const passwordValidation = {
     };
   },
 
+  /**
+   * Calculate password strength score
+   *
+   * @param {string} password - Password to evaluate
+   * @returns {number} Strength score (0-7)
+   */
   calculateStrength(password) {
     let score = 0;
     if (password.length >= 8) score++;
