@@ -48,12 +48,31 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     app.config["WTF_CSRF_ENABLED"] = False
 
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(
+        app,
+        resources={
+            r"/api/*": {
+                "origins": [
+                    "https://driftdater-frontend.onrender.com",
+                    "http://localhost:5173",
+                    "http://localhost:4173",
+                ]
+            }
+        },
+    )
 
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
-    socketio.init_app(app, cors_allowed_origins="*", async_mode="threading")
+    socketio.init_app(
+        app,
+        cors_allowed_origins=[
+            "https://driftdater-frontend.onrender.com",
+            "http://localhost:5173",
+            "http://localhost:4173",
+        ],
+        async_mode="threading",
+    )
 
     # Serve uploaded files
     @app.route("/uploads/<path:filename>")

@@ -36,6 +36,7 @@ venv
 
 # Environment Variables
 .env
+.env.production
 .flaskenv
 
 # Instance folder
