@@ -7,6 +7,7 @@ from app.views import get_user_from_token
 
 bp_notifications = Blueprint("notifications", __name__, url_prefix="/api/notifications")
 
+
 def email_notification(UserID, notification_type):
     # email_notification(User, Admire, notification_type):
     link = current_app.config.get("FRONTEND_URL", "http://localhost:5173")

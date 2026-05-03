@@ -432,8 +432,7 @@ const handleResendVerification = async () => {
 
   try {
     await authService.resendVerification(email.value);
-    successMessage.value =
-      "Verification email sent! Please check your inbox.";
+    successMessage.value = "Verification email sent! Please check your inbox.";
     showResendVerification.value = false;
   } catch (err) {
     error.value = err.message || "Failed to resend verification email";
