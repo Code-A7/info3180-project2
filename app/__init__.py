@@ -53,7 +53,7 @@ def create_app(config_class=Config):
         resources={
             r"/api/*": {
                 "origins": [
-                    "https://driftdater-frontend.onrender.com",
+                    "https://driftdater-frontend-7zt8.onrender.com",
                     "http://localhost:5173",
                     "http://localhost:4173",
                 ]
@@ -67,7 +67,7 @@ def create_app(config_class=Config):
     socketio.init_app(
         app,
         cors_allowed_origins=[
-            "https://driftdater-frontend.onrender.com",
+            "https://driftdater-frontend-7zt8.onrender.com",
             "http://localhost:5173",
             "http://localhost:4173",
         ],
