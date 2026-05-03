@@ -49,7 +49,15 @@ class Config:
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
     MAX_FILENAME_LENGTH = 255
 
-    # Mail. SMTP_* is preferred; MAILTRAP_* is kept for existing local configs.
+    # Mail. Use EMAIL_PROVIDER=resend in production on hosts that block SMTP.
+    RESEND_API_KEY = get_env_var("RESEND_API_KEY")
+    EMAIL_PROVIDER = get_env_var(
+        "EMAIL_PROVIDER", "resend" if RESEND_API_KEY else "smtp"
+    ).lower()
+    EMAIL_FROM = get_env_var("EMAIL_FROM")
+    RESEND_API_URL = get_env_var("RESEND_API_URL", "https://api.resend.com/emails")
+
+    # SMTP_* is preferred; MAILTRAP_* is kept for existing local configs.
     SMTP_HOST = get_env_var(
         "SMTP_HOST", get_env_var("MAILTRAP_SMTP_HOST", "sandbox.smtp.mailtrap.io")
     )
@@ -60,6 +68,7 @@ class Config:
         "SMTP_FROM_EMAIL",
         get_env_var("MAILTRAP_FROM_EMAIL", "DriftDater <noreply@driftdater.com>"),
     )
+    EMAIL_FROM = EMAIL_FROM or SMTP_FROM_EMAIL
     SMTP_USE_TLS = get_bool_env_var("SMTP_USE_TLS", True)
     SMTP_USE_SSL = get_bool_env_var("SMTP_USE_SSL", False)
 
