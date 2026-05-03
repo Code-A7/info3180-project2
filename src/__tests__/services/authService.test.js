@@ -162,6 +162,7 @@ describe('authService', () => {
 })
 =======
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import "dotenv/config";
 
 // Import actual functions to test
 import { validateEmail, passwordValidation } from "@/services/authService.js";
@@ -226,7 +227,9 @@ describe("authService - passwordValidation", () => {
     });
 
     it("returns false when missing special character", () => {
-      const result = passwordValidation.validate("mockPassword123");
+      const result = passwordValidation.validate(
+        process.env.MISSING_SPECIAL_CHARACTER_PASSWORD,
+      );
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain(
         "Password must contain at least one special character",
@@ -234,7 +237,7 @@ describe("authService - passwordValidation", () => {
     });
 
     it("returns strength in result", () => {
-      const result = passwordValidation.validate("dummyPass_123!");
+      const result = passwordValidation.validate(process.env.STRONG_PASSOWRD);
       expect(result.strength).toBeDefined();
       expect(["weak", "medium", "strong"]).toContain(result.strength);
     });
