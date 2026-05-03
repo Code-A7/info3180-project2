@@ -232,4 +232,4 @@ Tests are automatically run on GitHub Actions when pushing to the repository. Th
 6. **Coverage**: Aim for high test coverage, especially for critical business logic
 7. **Mocking**: Use mocks for external dependencies (database, APIs, WebSocket)
 8. **Test Data**: Use test-specific configurations to avoid modifying production data
-```
+
