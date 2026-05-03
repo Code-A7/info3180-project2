@@ -63,3 +63,6 @@ uploads/*.jpg
 uploads/*.jpeg
 uploads/*.gif
 !uploads/.gitkeep
+
+# Debug Screenshots
+docs/debug/

@@ -6,7 +6,12 @@ export const mockApi = {
   put: vi.fn(),
   delete: vi.fn(),
   patch: vi.fn(),
-  create: vi.fn(() => mockApi)
+  create: vi.fn(() => mockApi),
+  interceptors: {
+    request: { use: vi.fn() },
+    response: { use: vi.fn() }
+  },
+  defaults: { maxRetries: 2, timeout: 30000 }
 }
 
 export const mockAuthService = {
@@ -24,7 +29,7 @@ export const mockAuthService = {
   storeAuthData: vi.fn(),
   clearAuthData: vi.fn(),
   passwordValidation: {
-    validate: vi.fn(() => ({ isValid: true, errors: [] })),
+    validate: vi.fn(() => ({ isValid: true, errors: [], strength: 'strong' })),
     calculateStrength: vi.fn(() => 'strong')
   }
 }
@@ -79,7 +84,8 @@ export const mockSocketService = {
   off: vi.fn(),
   isConnected: vi.fn(() => false),
   joinRoom: vi.fn(),
-  leaveRoom: vi.fn()
+  leaveRoom: vi.fn(),
+  getSocket: vi.fn()
 }
 
 export const mockNotificationService = {
