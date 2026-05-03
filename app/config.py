@@ -1,5 +1,6 @@
 import os
 import secrets
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -48,6 +49,9 @@ class Config:
     MAILTRAP_FROM_EMAIL = get_env_var(
         "MAILTRAP_FROM_EMAIL", "DriftDater <noreply@driftdater.com>"
     )
+
+    # Frontend URL for email links
+    FRONTEND_URL = get_env_var("FRONTEND_URL", "http://localhost:5173")
 
     # JWT Configuration
     JWT_SECRET_KEY = get_env_var("JWT_SECRET_KEY") or secrets.token_hex(32)

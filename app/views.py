@@ -225,7 +225,9 @@ def register():
     db.session.add(user)
     db.session.commit()
 
-    verify_url = f"http://localhost:5173/verify/{user.verification_token}"
+    verify_url = (
+        f"{current_app.config['FRONTEND_URL']}/verify/{user.verification_token}"
+    )
 
     email_body = f"""
     <html>
@@ -368,7 +370,9 @@ def resend_verification():
     user.verification_token = secrets.token_urlsafe(32)
     db.session.commit()
 
-    verify_url = f"http://localhost:5173/verify/{user.verification_token}"
+    verify_url = (
+        f"{current_app.config['FRONTEND_URL']}/verify/{user.verification_token}"
+    )
 
     email_body = f"""
     <html>
@@ -429,7 +433,7 @@ def forgot_password():
     # For now, we'll encode it in JWT
     reset_jwt = generate_token(user.user_id, token_type="reset", expires_days=1)
 
-    reset_url = f"http://localhost:5173/reset-password?token={reset_jwt}"
+    reset_url = f"{current_app.config['FRONTEND_URL']}/reset-password?token={reset_jwt}"
 
     email_body = f"""
     <html>

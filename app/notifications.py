@@ -1,14 +1,13 @@
-from flask import Blueprint, jsonify
-from app import db
-from app.models import Notification, User
-from app.views import get_user_from_token
-
 import smtplib
 import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from flask import current_app
+from flask import Blueprint, current_app, jsonify
+
+from app import db
+from app.models import Notification, User
+from app.views import get_user_from_token
 
 bp_notifications = Blueprint("notifications", __name__, url_prefix="/api/notifications")
 
@@ -56,7 +55,7 @@ def send_email(to_email, subject, body):
 
 def email_notification(UserID, notification_type):
     # email_notification(User, Admire, notification_type):
-    link = "http://localhost:8080"
+    link = current_app.config.get("FRONTEND_URL", "http://localhost:5173")
     heading_noti = {
         "like": "You have a secret admire.",
         "match": "You have a new match.",
