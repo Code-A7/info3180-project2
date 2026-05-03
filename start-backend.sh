@@ -1,13 +1,17 @@
 #!/bin/bash
 
-# Kill any process on port 5000
-echo "Killing any process on port 5000..."
-lsof -ti:5000 | xargs kill -9 2>/dev/null || true
+# Startup script for Render deployment
+# This script runs database migrations and starts the Flask app
 
-# Wait a moment
-sleep 1
+echo "Starting DriftDater backend..."
 
-# Start Flask
-echo "Starting Flask..."
-source .venv/bin/activate
-python run.py
+# Run database migrations
+echo "Running database migrations..."
+flask db upgrade
+
+# Create uploads directory if it doesn't exist
+mkdir -p uploads
+
+# Start the Flask application with Gunicorn
+echo "Starting Flask app with Gunicorn..."
+exec gunicorn -k eventlet -w 1 --bind 0.0.0.0:$PORT run:app
