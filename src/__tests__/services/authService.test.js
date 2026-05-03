@@ -56,11 +56,7 @@ describe('authService - passwordValidation', () => {
     })
 
     it('returns false when missing special character', () => {
-<<<<<<< HEAD
       const result = passwordValidation.validate(process.env.MISSING_SPECIAL_CHARACTER_PASSWORD)
-=======
-      const result = passwordValidation.validate('mockPassword123')
->>>>>>> 7951786 (fix: password rename)
       expect(result.isValid).toBe(false)
       expect(result.errors).toContain('Password must contain at least one special character')
     })
