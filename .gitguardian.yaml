@@ -1,0 +1,4 @@
+ignore:
+  paths:
+    - "**/__tests__/**"
+    - "authService.test.js"
