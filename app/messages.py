@@ -35,6 +35,7 @@ def get_socket_emit():
         # Fallback no-op emitter for test environments
         def noop_emit(user_id, event, data):
             pass
+
         return noop_emit
 
 

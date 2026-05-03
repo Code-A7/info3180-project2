@@ -262,6 +262,7 @@ def match_pair(client, app, user_with_profile, second_user_with_profile):
     # Verify match was actually created
     with app.app_context():
         from app.models import Match
+
         match = Match.query.filter(
             ((Match.user1_id == user1_id) & (Match.user2_id == user2_id))
             | ((Match.user1_id == user2_id) & (Match.user2_id == user1_id))
