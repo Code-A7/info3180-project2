@@ -48,15 +48,12 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     app.config["WTF_CSRF_ENABLED"] = False
 
-    # Configure CORS for production
-    cors_origins = os.environ.get("CORS_ORIGINS", "*").split(",")
-
-    CORS(app, resources={r"/api/*": {"origins": cors_origins}})
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
-    socketio.init_app(app, cors_allowed_origins=cors_origins, async_mode="threading")
+    socketio.init_app(app, cors_allowed_origins="*", async_mode="threading")
 
     # Serve uploaded files
     @app.route("/uploads/<path:filename>")
