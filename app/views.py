@@ -208,7 +208,7 @@ def register():
         return (
             jsonify(
                 {
-                    "error": "Registration email could not be sent. Please check SMTP configuration and try again."
+                    "error": "Registration email could not be sent. Please check email delivery configuration and try again."
                 }
             ),
             503,
@@ -365,7 +365,7 @@ def resend_verification():
         return (
             jsonify(
                 {
-                    "error": "Verification email could not be sent. Please check SMTP configuration and try again."
+                    "error": "Verification email could not be sent. Please check email delivery configuration and try again."
                 }
             ),
             503,
