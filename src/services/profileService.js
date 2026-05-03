@@ -33,6 +33,12 @@ export const profileService = {
     const response = await api.get(`/api/profile/${userId}`);
     return response.data;
   },
+
+  // Alias used by ProfileView
+  async getOtherProfile(userId) {
+    const response = await api.get(`/api/profile/${userId}`);
+    return response.data;
+  },
 };
 
 export default profileService;

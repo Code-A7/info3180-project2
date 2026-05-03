@@ -13,45 +13,16 @@ from app import db
 
 
 def utc_now():
-    """
-    Get current UTC timestamp.
-
-    Returns:
-        Current datetime in UTC timezone
-    """
     return datetime.now(timezone.utc)
 
 
 def generate_verification_token():
-    """
-    Generate a random verification token.
-
-    Returns:
-        Random 64-character alphanumeric string
-    """
     return "".join(
         secrets.choice(string.ascii_letters + string.digits) for _ in range(64)
     )
 
 
 class User(db.Model):
-    """
-    User model representing application users.
-
-    Attributes:
-        user_id: Primary key
-        email: User's email address (unique)
-        password_hash: Hashed password
-        is_verified: Email verification status
-        verification_token: Token for email verification
-        created_at: Account creation timestamp
-        last_active: Last activity timestamp
-        profile: One-to-one relationship with Profile
-        likes_sent: Likes sent by this user
-        likes_received: Likes received by this user
-        notifications: User's notifications
-    """
-
     __tablename__ = "users"
 
     user_id = db.Column(db.Integer, primary_key=True)
@@ -88,8 +59,8 @@ class User(db.Model):
             "hashed_password": self.password_hash,
             "is_verified": self.is_verified,
             "verification_token": self.verification_token,
-            "created_at": self.created_at,
-            "last_active": self.last_active,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "last_active": self.last_active.isoformat() if self.last_active else None,
         }
 
     def __repr__(self):
@@ -103,20 +74,20 @@ class Profile(db.Model):
     Attributes:
         profile_id: Primary key
         user_id: Foreign key to User
-        name: User's name
+        name: User's display name
         age: User's age
         bio: User's biography
-        preferred_age_min: Minimum age preference for matches
-        preferred_age_max: Maximum age preference for matches
-        interests: List of user interests
-        profile_picture: URL/path to profile picture
-        visibility: Whether profile is public
+        location: User's location (city, parish, or country)
+        preferred_age_min: Minimum preferred match age
+        preferred_age_max: Maximum preferred match age
+        interests: JSON list of interests/hobbies (min 3)
+        profile_picture: Filename of uploaded profile photo
+        visibility: True = public, False = private
         gender: User's gender
-        gender_preference: Gender preference for matches
-        relationship_goal: User's relationship goal
-        occupation: User's occupation
-        created_at: Profile creation timestamp
-        updated_at: Last update timestamp
+        gender_preference: Preferred partner gender
+        relationship_goal: What the user is looking for
+        occupation: User's job/profession
+        created_at / updated_at: Timestamps
     """
 
     __tablename__ = "profiles"
@@ -135,7 +106,10 @@ class Profile(db.Model):
     age = db.Column(db.Integer, nullable=False)
     bio = db.Column(db.Text)
 
-    # Age preferences
+    # Geographic location — required by spec for location-based matching
+    location = db.Column(db.String(150), nullable=True, index=True)
+
+    # Age preferences for matching
     preferred_age_min = db.Column(db.Integer, default=18)
     preferred_age_max = db.Column(db.Integer, default=50)
 
@@ -148,6 +122,7 @@ class Profile(db.Model):
     gender = db.Column(db.String(50))
     gender_preference = db.Column(db.String(50), default="all")
 
+    # Additional custom fields (satisfies spec requirement for ≥2 extra fields)
     relationship_goal = db.Column(db.String(50))
     occupation = db.Column(db.String(100))
 
@@ -161,6 +136,7 @@ class Profile(db.Model):
             "name": self.name,
             "age": self.age,
             "bio": self.bio,
+            "location": self.location,
             "preferred_age_min": self.preferred_age_min,
             "preferred_age_max": self.preferred_age_max,
             "interests": self.interests or [],
@@ -179,17 +155,6 @@ class Profile(db.Model):
 
 
 class Like(db.Model):
-    """
-    Like model representing user likes/dislikes.
-
-    Attributes:
-        like_id: Primary key
-        from_user_id: User who sent the like
-        to_user_id: User who received the like
-        status: Type of interaction (liked, disliked, passed)
-        created_at: Timestamp when like was created
-    """
-
     __tablename__ = "likes"
 
     like_id = db.Column(db.Integer, primary_key=True)
@@ -214,18 +179,6 @@ class Like(db.Model):
 
 
 class Match(db.Model):
-    """
-    Match model representing mutual matches between users.
-
-    Attributes:
-        match_id: Primary key
-        user1_id: First user in the match
-        user2_id: Second user in the match
-        created_at: Timestamp when match was created
-        user1: Relationship to first user
-        user2: Relationship to second user
-    """
-
     __tablename__ = "matches"
 
     match_id = db.Column(db.Integer, primary_key=True)
@@ -243,29 +196,15 @@ class Match(db.Model):
     )
 
     def to_dict(self, include_profiles=False):
-        result = {
+        return {
             "id": self.match_id,
             "user1_id": self.user1_id,
             "user2_id": self.user2_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
-        return result
 
 
 class Notification(db.Model):
-    """
-    Notification model representing user notifications.
-
-    Attributes:
-        notification_id: Primary key
-        user_id: User who receives the notification
-        type: Type of notification (match, like, message)
-        message: Notification message content
-        from_user_id: User who triggered the notification
-        is_read: Whether notification has been read
-        created_at: Timestamp when notification was created
-    """
-
     __tablename__ = "notifications"
     __table_args__ = (
         db.Index(
@@ -279,7 +218,7 @@ class Notification(db.Model):
 
     notification_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
-    type = db.Column(db.String(50), nullable=False)  # 'match', 'like', 'message'
+    type = db.Column(db.String(50), nullable=False)
     message = db.Column(db.String(255), nullable=False)
     from_user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
     is_read = db.Column(db.Boolean, default=False)
@@ -300,20 +239,6 @@ class Notification(db.Model):
 
 
 class Message(db.Model):
-    """
-    Message model representing private messages between users.
-
-    Attributes:
-        message_id: Primary key
-        sender_id: User who sent the message
-        receiver_id: User who received the message
-        content: Message content
-        created_at: Timestamp when message was created
-        read_at: Timestamp when message was read
-        sender: Relationship to sender user
-        receiver: Relationship to receiver user
-    """
-
     __tablename__ = "messages"
     __table_args__ = (
         db.Index("ix_messages_receiver_read", "receiver_id", "read_at"),
@@ -359,13 +284,6 @@ class Message(db.Model):
 
 
 class Bookmark(db.Model):
-    """
-    Bookmark model representing user bookmarks/favorites.
-
-    Attributes:
-        bookmark_id: Primary key
-    """
-
     __tablename__ = "bookmark"
 
     bookmark_id = db.Column(db.Integer, primary_key=True)

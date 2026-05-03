@@ -62,19 +62,8 @@ class RegistrationForm(FlaskForm):
         ],
     )
 
-    def validate_email(self, email):
-        """
-        Validate that the email is not already registered.
-
-        Args:
-            email: The email field to validate
-
-        Raises:
-            ValidationError: If the email is already registered
-        """
-        user = User.query.filter_by(email=email.data).first()
-        if user:
-            raise ValidationError("This email is already registered")
+    # Email uniqueness is enforced in views.py after form validation
+    # to avoid duplicate error messages being returned to the client.
 
 
 class LoginForm(FlaskForm):

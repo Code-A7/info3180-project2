@@ -941,8 +941,9 @@ import { useAuth } from "../composables/useAuth";
 
 const { isAuthenticated, user: currentUser } = useAuth();
 const hasProfile = ref(false);
+const profileName = ref("");
 const userName = computed(
-  () => currentUser.value?.name || currentUser.value?.username || "User",
+  () => profileName.value || currentUser.value?.name || currentUser.value?.username || "User",
 );
 const profilePicture = ref(null);
 const loading = ref(true);
@@ -972,12 +973,24 @@ const loadData = async () => {
     const profileData = await profileService.getProfile();
     hasProfile.value = true;
 
+    // Use name from profile (most up-to-date source)
+    if (profileData.name) {
+      profileName.value = profileData.name; // full name from profile
+    }
+
     if (profileData.profile_picture) {
       profilePicture.value = profileData.profile_picture;
     }
 
     const matchesData = await matchService.getMatches().catch(() => []);
-    recentMatches.value = matchesData.slice(0, 4);
+    // Flatten nested profile data so template can access match.user_id, match.profile_picture etc.
+    recentMatches.value = matchesData.slice(0, 4).map((m) => ({
+      user_id: m.profile?.user_id,
+      profile_picture: m.profile?.profile_picture,
+      user_name: m.profile?.name,
+      matched_at: m.matched_at,
+      match_id: m.match_id,
+    }));
     stats.value.totalMatches = matchesData.length;
     stats.value.newMatches = matchesData.filter((m) => {
       const matchDate = new Date(m.matched_at || Date.now());

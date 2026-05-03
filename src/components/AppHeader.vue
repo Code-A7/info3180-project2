@@ -740,6 +740,7 @@ import notificationService from "../services/notificationService";
 import messageService from "../services/messageService";
 import socketService from "../services/socketService";
 import { useAuth } from "../composables/useAuth";
+import profileService from "../services/profileService";
 
 const router = useRouter();
 const route = useRoute();
@@ -805,19 +806,22 @@ const checkAuth = async () => {
     userEmail.value = user.email || "";
     userProfilePicture.value = user.profile_picture || null;
 
-    if (!user.name || !user.profile_picture) {
-      try {
-        const freshUser = await authService.getCurrentUser();
-        if (freshUser) {
-          if (freshUser.name) userName.value = freshUser.name;
-          if (freshUser.profile_picture) {
-            userProfilePicture.value = freshUser.profile_picture;
-          }
-        }
-      } catch (e) {
-        console.warn("Could not fetch fresh user data");
-      }
+  // Always fetch fresh data from backend to ensure correct user info after account switch
+  try {
+    const freshUser = await authService.getCurrentUser();
+    if (freshUser) {
+      if (freshUser.name) userName.value = freshUser.name;
+      userProfilePicture.value = freshUser.profile_picture || null;
     }
+    // Also get profile for most accurate name and picture
+    const profileData = await profileService.getProfile().catch(() => null);
+    if (profileData) {
+      if (profileData.name) userName.value = profileData.name;
+      if (profileData.profile_picture) userProfilePicture.value = profileData.profile_picture;
+    }
+  } catch (e) {
+    console.warn("Could not fetch fresh user data");
+  }
   }
 };
 
@@ -867,10 +871,15 @@ const handleClickOutside = (event) => {
   }
 };
 
+const handleNotificationsUpdated = () => {
+  loadUnreadCount();
+};
+
 onMounted(() => {
   checkAuth();
   loadUnreadCount();
   document.addEventListener("click", handleClickOutside);
+  window.addEventListener("notifications-updated", handleNotificationsUpdated);
 
   if (isAuthenticated.value) {
     socketService.connect();
@@ -883,6 +892,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside);
+  window.removeEventListener("notifications-updated", handleNotificationsUpdated);
   socketService.off("notification", handleNewNotification);
   socketService.off("new_match", handleNewNotification);
   socketService.off("new_like", handleNewNotification);
