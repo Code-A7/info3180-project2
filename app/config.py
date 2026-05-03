@@ -8,7 +8,9 @@ load_dotenv()
 
 def get_env_var(name, default=None, required=False):
     """Get environment variable with optional validation."""
-    value = os.environ.get(name, default)
+    value = os.environ.get(name)
+    if value is None or value.strip() == "":
+        value = default
     if required and not value:
         raise ValueError(f"Required environment variable {name} is not set")
     return value
