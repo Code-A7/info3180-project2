@@ -67,3 +67,6 @@ uploads/*.gif
 
 # Debug Screenshots
 docs/debug/
+
+# Delete User From Database
+delete_user.py
