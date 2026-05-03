@@ -325,7 +325,7 @@
 </template>
 
 <script setup>
-const year = new Date().getFullYear();
+const currentYear = new Date().getFullYear();
 </script>
 
 <style scoped>

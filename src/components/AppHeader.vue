@@ -734,7 +734,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRouter } from "vue-router";
 import authService from "../services/authService";
 import notificationService from "../services/notificationService";
 import messageService from "../services/messageService";
@@ -742,7 +742,6 @@ import socketService from "../services/socketService";
 import { useAuth } from "../composables/useAuth";
 
 const router = useRouter();
-const route = useRoute();
 const { isAuthenticated, logout: authLogout } = useAuth();
 
 const unreadCount = ref(0);
@@ -814,7 +813,7 @@ const checkAuth = async () => {
             userProfilePicture.value = freshUser.profile_picture;
           }
         }
-      } catch (e) {
+      } catch {
         console.warn("Could not fetch fresh user data");
       }
     }

@@ -4,7 +4,7 @@ export const APP_BASE_URL = 'http://localhost:5173'
 export async function createTestUser(api, email = null) {
   const uniqueEmail = email || `test${Date.now()}@example.com`
   
-  const response = await api.post(`${API_BASE_URL}/api/auth/register`, {
+  await api.post(`${API_BASE_URL}/api/auth/register`, {
     data: {
       email: uniqueEmail,
       password: 'TestPass123!',

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.config.js
+debug-screenshots.js
+take-screenshots.js
+e2e/
+src/test/
+ src/__tests__/composables/useAuth.test.js
+ src/views/LoginView.vue
+ src/views/RegisterView.vue
+ src/views/SettingsView.vue

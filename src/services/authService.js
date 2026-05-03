@@ -160,7 +160,7 @@ export const authService = {
   async logout() {
     try {
       await api.post("/api/auth/logout");
-    } catch (e) {
+    } catch {
       // Continue with local cleanup even if backend call fails
       console.warn("Logout API call failed, but cleaning up local data");
     } finally {
