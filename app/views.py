@@ -115,6 +115,7 @@ def rate_limit(max_requests=5, window_seconds=300):
 # JWT helpers
 # ---------------------------------------------------------------------------
 
+
 def generate_token(user_id, token_type="auth", expires_days=7):
     """Generate a signed JWT with configurable expiration."""
     payload = {
@@ -162,6 +163,7 @@ def get_user_from_token():
 # Email helper
 # ---------------------------------------------------------------------------
 
+
 def send_email(to_email, subject, body):
     """Send an HTML email via SMTP (falls back to console log if unconfigured)."""
     time.sleep(0.5)  # minimal anti-spam delay
@@ -171,7 +173,9 @@ def send_email(to_email, subject, body):
         smtp_port = current_app.config.get("MAILTRAP_SMTP_PORT")
         smtp_user = current_app.config.get("MAILTRAP_SMTP_USER")
         smtp_pass = current_app.config.get("MAILTRAP_SMTP_PASS")
-        from_email = current_app.config.get("MAILTRAP_FROM_EMAIL", "noreply@driftdater.app")
+        from_email = current_app.config.get(
+            "MAILTRAP_FROM_EMAIL", "noreply@driftdater.app"
+        )
 
         if not smtp_user or not smtp_pass:
             print(f"[MOCK EMAIL] To: {to_email} | Subject: {subject}")
@@ -199,6 +203,7 @@ def send_email(to_email, subject, body):
 # ---------------------------------------------------------------------------
 # Validation helpers
 # ---------------------------------------------------------------------------
+
 
 def validate_password_strength(password):
     """Return dict with is_valid flag and list of error messages."""
@@ -228,6 +233,7 @@ def allowed_file(filename):
 # Root
 # ---------------------------------------------------------------------------
 
+
 @bp.route("/")
 def index():
     return jsonify(message="Welcome to DriftDater API", version="1.0")
@@ -238,6 +244,7 @@ def index():
 # ===========================================================================
 
 # --- Registration -----------------------------------------------------------
+
 
 @bp.route("/api/auth/register", methods=["POST"])
 @rate_limit(max_requests=5, window_seconds=3600)
@@ -308,6 +315,7 @@ def register():
 
 # --- Email verification -----------------------------------------------------
 
+
 @bp.route("/api/auth/verify/<token>", methods=["GET"])
 @rate_limit(max_requests=10, window_seconds=3600)
 def verify_email(token):
@@ -328,6 +336,7 @@ def verify_email(token):
 
 
 # --- Login ------------------------------------------------------------------
+
 
 @bp.route("/api/auth/login", methods=["POST"])
 @rate_limit(max_requests=10, window_seconds=300)
@@ -398,6 +407,7 @@ def login():
 
 # --- Logout -----------------------------------------------------------------
 
+
 @bp.route("/api/auth/logout", methods=["POST"])
 def logout():
     """
@@ -410,6 +420,7 @@ def logout():
 
 
 # --- Resend verification email ----------------------------------------------
+
 
 @bp.route("/api/auth/resend-verification", methods=["POST"])
 @rate_limit(max_requests=3, window_seconds=3600)
@@ -440,6 +451,7 @@ def resend_verification():
         return jsonify({"error": "Email is already verified"}), 400
 
     import secrets as _secrets
+
     user.verification_token = _secrets.token_urlsafe(32)
     db.session.commit()
 
@@ -458,10 +470,14 @@ def resend_verification():
     """
     send_email(user.email, "Resend: Verify your DriftDater account", email_body)
 
-    return jsonify({"message": "Verification email sent. Please check your inbox."}), 200
+    return (
+        jsonify({"message": "Verification email sent. Please check your inbox."}),
+        200,
+    )
 
 
 # --- Forgot password --------------------------------------------------------
+
 
 @bp.route("/api/auth/forgot-password", methods=["POST"])
 @rate_limit(max_requests=5, window_seconds=3600)
@@ -477,11 +493,14 @@ def forgot_password():
 
     user = User.query.filter_by(email=email).first()
 
-    _generic_response = jsonify(
-        {
-            "message": "If an account exists with this email, a password reset link has been sent."
-        }
-    ), 200
+    _generic_response = (
+        jsonify(
+            {
+                "message": "If an account exists with this email, a password reset link has been sent."
+            }
+        ),
+        200,
+    )
 
     if not user:
         return _generic_response
@@ -511,6 +530,7 @@ def forgot_password():
 
 # --- Reset password ---------------------------------------------------------
 
+
 @bp.route("/api/auth/reset-password", methods=["POST"])
 @rate_limit(max_requests=5, window_seconds=3600)
 def reset_password():
@@ -535,7 +555,10 @@ def reset_password():
     if not password or not confirm_password:
         return jsonify({"error": "Password and confirm password are required"}), 400
     if password != confirm_password:
-        return jsonify({"errors": {"confirm_password": ["Passwords do not match"]}}), 400
+        return (
+            jsonify({"errors": {"confirm_password": ["Passwords do not match"]}}),
+            400,
+        )
 
     password_check = validate_password_strength(password)
     if not password_check["is_valid"]:
@@ -563,6 +586,7 @@ def reset_password():
 
 
 # --- Change password (authenticated) ---------------------------------------
+
 
 @bp.route("/api/auth/change-password", methods=["POST"])
 def change_password():
@@ -592,24 +616,46 @@ def change_password():
     confirm_password = data.get("confirm_password")
 
     if not current_password:
-        return jsonify({"errors": {"current_password": ["Current password is required"]}}), 400
+        return (
+            jsonify({"errors": {"current_password": ["Current password is required"]}}),
+            400,
+        )
     if not new_password:
         return jsonify({"errors": {"new_password": ["New password is required"]}}), 400
     if not confirm_password:
-        return jsonify({"errors": {"confirm_password": ["Please confirm your new password"]}}), 400
+        return (
+            jsonify(
+                {"errors": {"confirm_password": ["Please confirm your new password"]}}
+            ),
+            400,
+        )
 
     # Verify current password
     if not bcrypt.check_password_hash(user.password_hash, current_password):
-        return jsonify({"errors": {"current_password": ["Incorrect current password"]}}), 401
+        return (
+            jsonify({"errors": {"current_password": ["Incorrect current password"]}}),
+            401,
+        )
 
     if new_password == current_password:
         return (
-            jsonify({"errors": {"new_password": ["New password must differ from the current one"]}}),
+            jsonify(
+                {
+                    "errors": {
+                        "new_password": [
+                            "New password must differ from the current one"
+                        ]
+                    }
+                }
+            ),
             400,
         )
 
     if new_password != confirm_password:
-        return jsonify({"errors": {"confirm_password": ["Passwords do not match"]}}), 400
+        return (
+            jsonify({"errors": {"confirm_password": ["Passwords do not match"]}}),
+            400,
+        )
 
     strength = validate_password_strength(new_password)
     if not strength["is_valid"]:
@@ -622,6 +668,7 @@ def change_password():
 
 
 # --- Refresh token ----------------------------------------------------------
+
 
 @bp.route("/api/auth/refresh", methods=["POST"])
 @rate_limit(max_requests=10, window_seconds=60)
@@ -657,6 +704,7 @@ def refresh_token():
 
 # --- Current user -----------------------------------------------------------
 
+
 @bp.route("/api/auth/me", methods=["GET"])
 def get_current_user():
     """Return the authenticated user's basic info."""
@@ -690,6 +738,7 @@ def get_current_user():
 
 # --- Delete account ---------------------------------------------------------
 
+
 @bp.route("/api/auth/account", methods=["DELETE"])
 def delete_account():
     """
@@ -711,7 +760,12 @@ def delete_account():
     password = data.get("password")
 
     if not password:
-        return jsonify({"error": "Password confirmation is required to delete your account"}), 400
+        return (
+            jsonify(
+                {"error": "Password confirmation is required to delete your account"}
+            ),
+            400,
+        )
 
     if not bcrypt.check_password_hash(user.password_hash, password):
         return jsonify({"error": "Incorrect password"}), 401
@@ -727,7 +781,8 @@ def delete_account():
     ).delete(synchronize_session=False)
 
     Bookmark.query.filter(
-        (Bookmark.user_id == user.user_id) | (Bookmark.bookmarked_user_id == user.user_id)
+        (Bookmark.user_id == user.user_id)
+        | (Bookmark.bookmarked_user_id == user.user_id)
     ).delete(synchronize_session=False)
 
     db.session.delete(user)
@@ -739,6 +794,7 @@ def delete_account():
 # ===========================================================================
 # PROFILE ENDPOINTS
 # ===========================================================================
+
 
 @bp.route("/api/profile", methods=["GET"])
 def get_profile():
@@ -801,7 +857,9 @@ def create_profile():
     if isinstance(interests_raw, list):
         interests_list = [i.strip() for i in interests_raw if i.strip()]
     else:
-        interests_list = [i.strip() for i in form.interests.data.split(",") if i.strip()]
+        interests_list = [
+            i.strip() for i in form.interests.data.split(",") if i.strip()
+        ]
 
     if len(interests_list) < 3:
         return (
@@ -824,7 +882,13 @@ def create_profile():
         preferred_age_max = 120
     if preferred_age_min > preferred_age_max:
         return (
-            jsonify({"errors": {"preferred_age_min": ["Minimum age cannot exceed maximum age"]}}),
+            jsonify(
+                {
+                    "errors": {
+                        "preferred_age_min": ["Minimum age cannot exceed maximum age"]
+                    }
+                }
+            ),
             400,
         )
 
@@ -882,7 +946,10 @@ def update_profile():
         try:
             age = int(data["age"])
             if age < 18:
-                return jsonify({"errors": {"age": ["You must be at least 18 years old"]}}), 400
+                return (
+                    jsonify({"errors": {"age": ["You must be at least 18 years old"]}}),
+                    400,
+                )
             profile.age = age
         except (TypeError, ValueError):
             return jsonify({"errors": {"age": ["Invalid age value"]}}), 400
@@ -938,7 +1005,13 @@ def update_profile():
 
     if profile.preferred_age_min > profile.preferred_age_max:
         return (
-            jsonify({"errors": {"preferred_age_min": ["Minimum age cannot exceed maximum age"]}}),
+            jsonify(
+                {
+                    "errors": {
+                        "preferred_age_min": ["Minimum age cannot exceed maximum age"]
+                    }
+                }
+            ),
             400,
         )
 
@@ -974,12 +1047,17 @@ def upload_picture():
         return jsonify({"error": "No file selected"}), 400
 
     if not file or not allowed_file(file.filename):
-        return jsonify({"error": "Invalid file type. Allowed: png, jpg, jpeg, gif, webp"}), 400
+        return (
+            jsonify({"error": "Invalid file type. Allowed: png, jpg, jpeg, gif, webp"}),
+            400,
+        )
 
     filename = secure_filename(f"user_{user.user_id}_{file.filename}")
     upload_folder = current_app.config.get("UPLOAD_FOLDER", "./uploads")
     if not os.path.isabs(upload_folder):
-        upload_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), upload_folder)
+        upload_folder = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)), upload_folder
+        )
     os.makedirs(upload_folder, exist_ok=True)
     filepath = os.path.join(upload_folder, filename)
     file.save(filepath)
@@ -1019,6 +1097,7 @@ def view_other_profile(user_id):
 # SEARCH & DISCOVERY
 # ===========================================================================
 
+
 @bp.route("/api/search", methods=["GET"])
 def search_get():
     """
@@ -1057,9 +1136,7 @@ def search_get():
         "age_min": request.args.get("age_min"),
         "age_max": request.args.get("age_max"),
         "interests": [
-            i.strip()
-            for i in request.args.get("interests", "").split(",")
-            if i.strip()
+            i.strip() for i in request.args.get("interests", "").split(",") if i.strip()
         ],
         "gender": request.args.get("gender", "").strip(),
         "relationship_goal": request.args.get("relationship_goal", "").strip(),
@@ -1111,7 +1188,9 @@ def _execute_search(user, current_profile, data):
     Returns:
         Flask JSON response with paginated results and metadata.
     """
-    from app.matches import calculate_match_score  # avoid circular import at module level
+    from app.matches import (
+        calculate_match_score,
+    )  # avoid circular import at module level
 
     # --- Parse and coerce parameters ----------------------------------------
     q = str(data.get("q") or "").strip().lower()
@@ -1207,8 +1286,12 @@ def _execute_search(user, current_profile, data):
     for p in all_profiles:
         match_result = calculate_match_score(current_profile, p)
         profile_data = p.to_dict()
-        profile_data["match_score"] = match_result["score"] if isinstance(match_result, dict) else match_result
-        profile_data["match_details"] = match_result.get("details", {}) if isinstance(match_result, dict) else {}
+        profile_data["match_score"] = (
+            match_result["score"] if isinstance(match_result, dict) else match_result
+        )
+        profile_data["match_details"] = (
+            match_result.get("details", {}) if isinstance(match_result, dict) else {}
+        )
 
         # Bookmark status
         bookmark = Bookmark.query.filter_by(
@@ -1283,7 +1366,10 @@ def search_suggestions():
         return jsonify({"suggestions": []}), 200
 
     if suggestion_type not in ("interests", "locations", "occupations"):
-        return jsonify({"error": "type must be interests, locations, or occupations"}), 400
+        return (
+            jsonify({"error": "type must be interests, locations, or occupations"}),
+            400,
+        )
 
     if suggestion_type == "locations":
         rows = (
@@ -1318,7 +1404,9 @@ def search_suggestions():
         # filter in Python (acceptable for moderate dataset sizes).
         all_interests = set()
         profiles = (
-            Profile.query.filter(Profile.visibility.is_(True), Profile.interests.isnot(None))
+            Profile.query.filter(
+                Profile.visibility.is_(True), Profile.interests.isnot(None)
+            )
             .with_entities(Profile.interests)
             .limit(500)
             .all()
@@ -1331,12 +1419,16 @@ def search_suggestions():
 
         suggestions = sorted(all_interests)[:10]
 
-    return jsonify({"suggestions": suggestions, "type": suggestion_type, "query": q}), 200
+    return (
+        jsonify({"suggestions": suggestions, "type": suggestion_type, "query": q}),
+        200,
+    )
 
 
 # ===========================================================================
 # Response headers
 # ===========================================================================
+
 
 @bp.after_request
 def add_header(response):
