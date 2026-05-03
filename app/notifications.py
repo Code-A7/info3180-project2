@@ -1,57 +1,11 @@
-import smtplib
-import time
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-
 from flask import Blueprint, current_app, jsonify
 
 from app import db
+from app.email_utils import send_email
 from app.models import Notification, User
 from app.views import get_user_from_token
 
 bp_notifications = Blueprint("notifications", __name__, url_prefix="/api/notifications")
-
-# TEST
-
-
-def send_email(to_email, subject, body):
-    """Send email with rate limiting"""
-    # Rate limiting: 1 second delay between emails
-    if not current_app.config.get("TESTING"):
-        time.sleep(1)
-
-    try:
-        smtp_host = current_app.config.get("MAILTRAP_SMTP_HOST")
-        smtp_port = current_app.config.get("MAILTRAP_SMTP_PORT")
-        smtp_user = current_app.config.get("MAILTRAP_SMTP_USER")
-        smtp_pass = current_app.config.get("MAILTRAP_SMTP_PASS")
-        from_email = current_app.config.get("MAILTRAP_FROM_EMAIL")
-
-        if not smtp_user or not smtp_pass:
-            print(f"[MOCK EMAIL] To: {to_email}, Subject: {subject}")
-            print(f"[MOCK EMAIL] Body: {body[:200]}...")
-            return True
-
-        print(f"[EMAIL] Attempting to send to {to_email} via {smtp_host}:{smtp_port}")
-
-        msg = MIMEMultipart()
-        msg["From"] = from_email
-        msg["To"] = to_email
-        msg["Subject"] = subject
-        msg.attach(MIMEText(body, "html"))
-
-        server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
-        server.starttls()
-        server.login(smtp_user, smtp_pass)
-        server.send_message(msg)
-        server.quit()
-
-        print(f"[EMAIL] Successfully sent to {to_email}")
-        return True
-    except Exception as e:
-        print(f"[EMAIL ERROR] Failed to send email: {e}")
-        return False
-
 
 def email_notification(UserID, notification_type):
     # email_notification(User, Admire, notification_type):

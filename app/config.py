@@ -14,6 +14,14 @@ def get_env_var(name, default=None, required=False):
     return value
 
 
+def get_bool_env_var(name, default=False):
+    """Read a boolean environment variable."""
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 class Config:
     """Base configuration with security defaults."""
 
@@ -41,14 +49,25 @@ class Config:
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
     MAX_FILENAME_LENGTH = 255
 
-    # Mail
-    MAILTRAP_SMTP_HOST = get_env_var("MAILTRAP_SMTP_HOST", "sandbox.smtp.mailtrap.io")
-    MAILTRAP_SMTP_PORT = int(get_env_var("MAILTRAP_SMTP_PORT", 2525))
-    MAILTRAP_SMTP_USER = get_env_var("MAILTRAP_SMTP_USER")
-    MAILTRAP_SMTP_PASS = get_env_var("MAILTRAP_SMTP_PASS")
-    MAILTRAP_FROM_EMAIL = get_env_var(
-        "MAILTRAP_FROM_EMAIL", "DriftDater <noreply@driftdater.com>"
+    # Mail. SMTP_* is preferred; MAILTRAP_* is kept for existing local configs.
+    SMTP_HOST = get_env_var(
+        "SMTP_HOST", get_env_var("MAILTRAP_SMTP_HOST", "sandbox.smtp.mailtrap.io")
     )
+    SMTP_PORT = int(get_env_var("SMTP_PORT", get_env_var("MAILTRAP_SMTP_PORT", 2525)))
+    SMTP_USER = get_env_var("SMTP_USER", get_env_var("MAILTRAP_SMTP_USER"))
+    SMTP_PASS = get_env_var("SMTP_PASS", get_env_var("MAILTRAP_SMTP_PASS"))
+    SMTP_FROM_EMAIL = get_env_var(
+        "SMTP_FROM_EMAIL",
+        get_env_var("MAILTRAP_FROM_EMAIL", "DriftDater <noreply@driftdater.com>"),
+    )
+    SMTP_USE_TLS = get_bool_env_var("SMTP_USE_TLS", True)
+    SMTP_USE_SSL = get_bool_env_var("SMTP_USE_SSL", False)
+
+    MAILTRAP_SMTP_HOST = SMTP_HOST
+    MAILTRAP_SMTP_PORT = SMTP_PORT
+    MAILTRAP_SMTP_USER = SMTP_USER
+    MAILTRAP_SMTP_PASS = SMTP_PASS
+    MAILTRAP_FROM_EMAIL = SMTP_FROM_EMAIL
 
     # Frontend URL for email links
     FRONTEND_URL = get_env_var("FRONTEND_URL", "http://localhost:5173")
@@ -94,6 +113,8 @@ class TestingConfig(Config):
         "SQLALCHEMY_DATABASE_URI", "sqlite:///:memory:"
     )
     WTF_CSRF_ENABLED = False
+    SMTP_USER = None
+    SMTP_PASS = None
     MAILTRAP_SMTP_USER = None
     MAILTRAP_SMTP_PASS = None
 

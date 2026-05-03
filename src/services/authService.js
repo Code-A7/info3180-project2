@@ -141,7 +141,7 @@ export const authService = {
       const errorMsg = response.data.errors.general[0];
       if (errorMsg.includes("verify")) {
         throw new Error(
-          "Please verify your email first. Check your Mailtrap inbox for the verification link.",
+          "Please verify your email first. Check your inbox for the verification link.",
         );
       }
       throw new Error(errorMsg);

@@ -277,7 +277,7 @@
           class="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl"
         >
           <p class="text-sm text-green-600 dark:text-green-400">
-            Password reset link sent! Check your email (Mailtrap inbox).
+            Password reset link sent! Check your email inbox.
           </p>
         </div>
 
@@ -409,7 +409,7 @@ const handleLogin = async () => {
 
     if (errorMsg && errorMsg.includes("verify")) {
       error.value =
-        "Your email is not verified. Please check your Mailtrap inbox for the verification email.";
+        "Your email is not verified. Please check your inbox for the verification email.";
       showResendVerification.value = true;
     } else if (err.response?.data?.errors?.general) {
       error.value = err.response.data.errors.general[0];
@@ -433,7 +433,7 @@ const handleResendVerification = async () => {
   try {
     await authService.resendVerification(email.value);
     successMessage.value =
-      "Verification email sent! Please check your Mailtrap inbox.";
+      "Verification email sent! Please check your inbox.";
     showResendVerification.value = false;
   } catch (err) {
     error.value = err.message || "Failed to resend verification email";
