@@ -7,11 +7,8 @@ including authentication, user management, profile operations, and other core fu
 
 import os
 import re
-import smtplib
 import time
 from datetime import datetime, timedelta, timezone
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from functools import wraps
 
 import jwt
@@ -19,6 +16,7 @@ from flask import Blueprint, current_app, g, jsonify, request
 from werkzeug.utils import secure_filename
 
 from app import bcrypt, db
+from app.email_utils import send_email
 from app.forms import LoginForm, ProfileForm, RegistrationForm
 from app.models import Profile, User
 
@@ -116,44 +114,6 @@ def verify_token(token, token_type="auth"):
         return None
 
 
-def send_email(to_email, subject, body):
-    """Send email with rate limiting"""
-    # Rate limiting: 1 second delay between emails
-    time.sleep(1)
-
-    try:
-        smtp_host = current_app.config.get("MAILTRAP_SMTP_HOST")
-        smtp_port = current_app.config.get("MAILTRAP_SMTP_PORT")
-        smtp_user = current_app.config.get("MAILTRAP_SMTP_USER")
-        smtp_pass = current_app.config.get("MAILTRAP_SMTP_PASS")
-        from_email = current_app.config.get("MAILTRAP_FROM_EMAIL")
-
-        if not smtp_user or not smtp_pass:
-            print(f"[MOCK EMAIL] To: {to_email}, Subject: {subject}")
-            print(f"[MOCK EMAIL] Body: {body[:200]}...")
-            return True
-
-        print(f"[EMAIL] Attempting to send to {to_email} via {smtp_host}:{smtp_port}")
-
-        msg = MIMEMultipart()
-        msg["From"] = from_email
-        msg["To"] = to_email
-        msg["Subject"] = subject
-        msg.attach(MIMEText(body, "html"))
-
-        server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
-        server.starttls()
-        server.login(smtp_user, smtp_pass)
-        server.send_message(msg)
-        server.quit()
-
-        print(f"[EMAIL] Successfully sent to {to_email}")
-        return True
-    except Exception as e:
-        print(f"[EMAIL ERROR] Failed to send email: {e}")
-        return False
-
-
 def validate_password_strength(password):
     """Validate password strength with detailed feedback"""
     errors = []
@@ -223,9 +183,11 @@ def register():
 
     user = User(email=form.email.data, password_hash=password_hash)
     db.session.add(user)
-    db.session.commit()
+    db.session.flush()
 
-    verify_url = f"http://localhost:5173/verify/{user.verification_token}"
+    verify_url = (
+        f"{current_app.config['FRONTEND_URL']}/verify/{user.verification_token}"
+    )
 
     email_body = f"""
     <html>
@@ -241,7 +203,18 @@ def register():
     </html>
     """
 
-    send_email(user.email, "Verify your DriftDater account", email_body)
+    if not send_email(user.email, "Verify your DriftDater account", email_body):
+        db.session.rollback()
+        return (
+            jsonify(
+                {
+                    "error": "Registration email could not be sent. Please check email delivery configuration and try again."
+                }
+            ),
+            503,
+        )
+
+    db.session.commit()
 
     return (
         jsonify(
@@ -298,7 +271,7 @@ def login():
                 {
                     "errors": {
                         "general": [
-                            "Please verify your email before logging in. Check your Mailtrap inbox."
+                            "Please verify your email before logging in. Check your inbox."
                         ]
                     }
                 }
@@ -366,9 +339,11 @@ def resend_verification():
     import secrets
 
     user.verification_token = secrets.token_urlsafe(32)
-    db.session.commit()
+    db.session.flush()
 
-    verify_url = f"http://localhost:5173/verify/{user.verification_token}"
+    verify_url = (
+        f"{current_app.config['FRONTEND_URL']}/verify/{user.verification_token}"
+    )
 
     email_body = f"""
     <html>
@@ -385,7 +360,18 @@ def resend_verification():
     </html>
     """
 
-    send_email(user.email, "Resend: Verify your DriftDater account", email_body)
+    if not send_email(user.email, "Resend: Verify your DriftDater account", email_body):
+        db.session.rollback()
+        return (
+            jsonify(
+                {
+                    "error": "Verification email could not be sent. Please check email delivery configuration and try again."
+                }
+            ),
+            503,
+        )
+
+    db.session.commit()
 
     return (
         jsonify({"message": "Verification email sent. Please check your inbox."}),
@@ -429,7 +415,7 @@ def forgot_password():
     # For now, we'll encode it in JWT
     reset_jwt = generate_token(user.user_id, token_type="reset", expires_days=1)
 
-    reset_url = f"http://localhost:5173/reset-password?token={reset_jwt}"
+    reset_url = f"{current_app.config['FRONTEND_URL']}/reset-password?token={reset_jwt}"
 
     email_body = f"""
     <html>
@@ -446,7 +432,8 @@ def forgot_password():
     </html>
     """
 
-    send_email(user.email, "Password Reset Request", email_body)
+    if not send_email(user.email, "Password Reset Request", email_body):
+        return jsonify({"error": "Password reset email could not be sent."}), 503
 
     return (
         jsonify(

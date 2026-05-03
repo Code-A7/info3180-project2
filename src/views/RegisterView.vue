@@ -558,7 +558,7 @@ const handleRegister = async () => {
     await register(email.value, password.value);
     showSuccess.value = true;
     successMessage.value =
-      "Please check your email (Mailtrap) to verify your account before logging in.";
+      "Please check your email inbox to verify your account before logging in.";
   } catch (err) {
     if (err.response?.data?.errors) {
       errors.value = err.response.data.errors;
@@ -578,7 +578,7 @@ const handleResendVerification = async () => {
   try {
     await authService.resendVerification(email.value);
     successMessage.value =
-      "Verification email resent! Please check your Mailtrap inbox.";
+      "Verification email resent! Please check your inbox.";
   } catch (err) {
     errors.value = {
       general: [err.message || "Failed to resend verification email"],

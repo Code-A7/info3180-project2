@@ -8,8 +8,8 @@ A complete guide to using DriftDater dating application.
 
 ### Creating an Account
 
-1. Navigate to http://localhost:5173
-2. Click **Register** in the header
+1. Navigate to https://driftdater-frontend-7zt8.onrender.com
+2. Click **Sign Up** in the header
 3. Fill in the registration form:
    - Email address (must be valid to receive verification)
    - Password (secure password recommended)
