@@ -404,7 +404,7 @@ def like_user(to_user_id):
             Like(from_user_id=user.user_id, to_user_id=to_user_id, status="liked")
         )
 
-    # Check for mutual like BEFORE committing this like, then commit everything together
+    db.session.flush()  # ← makes the new Like visible within the same transaction
     is_mutual = check_mutual_like(user.user_id, to_user_id)
 
     from_profile = Profile.query.filter_by(user_id=user.user_id).first()
