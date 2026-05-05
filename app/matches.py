@@ -66,7 +66,6 @@ def set_socket_emit(emit_func):
 # Core matching algorithm
 # ---------------------------------------------------------------------------
 
-
 def calculate_match_score(current_user_profile, other_profile):
     """
     Calculate a compatibility score (0–100) between two profiles.
@@ -145,16 +144,15 @@ def calculate_match_score(current_user_profile, other_profile):
         score += 15
 
     return {
-        "score": min(score, 100),  # cap at 100 for safety
+        "score": min(score, 100),   # cap at 100 for safety
         "details": details,
-        "passed": score < 50,  # below threshold → don't show in discovery
+        "passed": score < 0,        # threshold disabled — show all profiles in discovery
     }
 
 
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
-
 
 def check_mutual_like(user1_id, user2_id):
     """Return True if user2 has an active 'liked' record toward user1."""
@@ -212,7 +210,6 @@ def create_notification(user_id, notification_type, message, from_user_id=None):
 # Routes
 # ---------------------------------------------------------------------------
 
-
 @bp.route("/potential", methods=["GET"])
 def get_potential_matches():
     """
@@ -251,9 +248,7 @@ def get_potential_matches():
     # Also exclude users who passed/disliked us so we don't waste their time
     received_pass_ids = (
         db.session.query(Like.from_user_id)
-        .filter(
-            Like.to_user_id == user.user_id, Like.status.in_(["passed", "disliked"])
-        )
+        .filter(Like.to_user_id == user.user_id, Like.status.in_(["passed", "disliked"]))
         .all()
     )
     received_pass_ids = [r[0] for r in received_pass_ids]
@@ -305,11 +300,10 @@ def get_potential_matches():
     results = []
     for p in profiles:
         match_result = calculate_match_score(profile, p)
-        if not match_result["passed"]:  # only include profiles above threshold
-            profile_data = p.to_dict()
-            profile_data["match_score"] = match_result["score"]
-            profile_data["match_details"] = match_result["details"]
-            results.append(profile_data)
+        profile_data = p.to_dict()
+        profile_data["match_score"] = match_result["score"]
+        profile_data["match_details"] = match_result["details"]
+        results.append(profile_data)
 
     results.sort(key=lambda x: x["match_score"], reverse=True)
 
@@ -404,12 +398,14 @@ def like_user(to_user_id):
             Like(from_user_id=user.user_id, to_user_id=to_user_id, status="liked")
         )
 
-    db.session.flush()  # ← makes the new Like visible within the same transaction
+    # Flush the new Like to the DB so check_mutual_like can see it in the same transaction
+    db.session.flush()
     is_mutual = check_mutual_like(user.user_id, to_user_id)
 
     from_profile = Profile.query.filter_by(user_id=user.user_id).first()
 
     if is_mutual:
+        new_match = create_match(user.user_id, to_user_id)
 
         create_notification(
             to_user_id,
@@ -676,7 +672,6 @@ def search_profiles():
 # ---------------------------------------------------------------------------
 # Bookmarks
 # ---------------------------------------------------------------------------
-
 
 @bp.route("/bookmarks", methods=["GET"])
 def get_bookmarks():
