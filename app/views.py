@@ -33,11 +33,8 @@ SEARCH & DISCOVERY
 
 import os
 import re
-import smtplib
 import time
 from datetime import datetime, timedelta, timezone
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from functools import wraps
 
 import jwt
@@ -45,6 +42,7 @@ from flask import Blueprint, current_app, g, jsonify, request
 from werkzeug.utils import secure_filename
 
 from app import bcrypt, db
+from app.email_utils import send_email
 from app.forms import LoginForm, ProfileForm, RegistrationForm
 from app.models import Bookmark, Like, Match, Profile, User
 
@@ -142,6 +140,34 @@ def verify_token(token, token_type="auth"):
         return None
 
 
+<<<<<<< HEAD
+=======
+def validate_password_strength(password):
+    """Validate password strength with detailed feedback"""
+    errors = []
+
+    if len(password) < 8:
+        errors.append("Password must be at least 8 characters long")
+    if not re.search(r"[A-Z]", password):
+        errors.append("Password must contain at least one uppercase letter")
+    if not re.search(r"[a-z]", password):
+        errors.append("Password must contain at least one lowercase letter")
+    if not re.search(r"[0-9]", password):
+        errors.append("Password must contain at least one number")
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        errors.append("Password must contain at least one special character")
+
+    return {"is_valid": len(errors) == 0, "errors": errors}
+
+
+def allowed_file(filename):
+    allowed = current_app.config.get(
+        "ALLOWED_EXTENSIONS", {"png", "jpg", "jpeg", "gif", "webp"}
+    )
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed
+
+
+>>>>>>> d9a9bfc81d4487e3cc1eee4408b8b6144f7d7b84
 def get_user_from_token():
     """Extract and validate the Bearer token; return User or None."""
     auth_header = request.headers.get("Authorization")
@@ -281,11 +307,17 @@ def register():
     password_hash = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
     user = User(email=form.email.data, password_hash=password_hash)
     db.session.add(user)
-    db.session.commit()
+    db.session.flush()
 
+<<<<<<< HEAD
     # Build verification URL
     base_url = current_app.config.get("FRONTEND_URL", "http://localhost:5173")
     verify_url = f"{base_url}/verify/{user.verification_token}"
+=======
+    verify_url = (
+        f"{current_app.config['FRONTEND_URL']}/verify/{user.verification_token}"
+    )
+>>>>>>> d9a9bfc81d4487e3cc1eee4408b8b6144f7d7b84
 
     email_body = f"""
     <html><body>
@@ -300,7 +332,23 @@ def register():
         <p style="color:#9ca3af;font-size:14px;">This link expires in 24 hours.</p>
     </body></html>
     """
+<<<<<<< HEAD
     send_email(user.email, "Verify your DriftDater account", email_body)
+=======
+
+    if not send_email(user.email, "Verify your DriftDater account", email_body):
+        db.session.rollback()
+        return (
+            jsonify(
+                {
+                    "error": "Registration email could not be sent. Please check email delivery configuration and try again."
+                }
+            ),
+            503,
+        )
+
+    db.session.commit()
+>>>>>>> d9a9bfc81d4487e3cc1eee4408b8b6144f7d7b84
 
     return (
         jsonify(
@@ -452,11 +500,20 @@ def resend_verification():
 
     import secrets as _secrets
 
+<<<<<<< HEAD
     user.verification_token = _secrets.token_urlsafe(32)
     db.session.commit()
 
     base_url = current_app.config.get("FRONTEND_URL", "http://localhost:5173")
     verify_url = f"{base_url}/verify/{user.verification_token}"
+=======
+    user.verification_token = secrets.token_urlsafe(32)
+    db.session.flush()
+
+    verify_url = (
+        f"{current_app.config['FRONTEND_URL']}/verify/{user.verification_token}"
+    )
+>>>>>>> d9a9bfc81d4487e3cc1eee4408b8b6144f7d7b84
 
     email_body = f"""
     <html><body>
@@ -468,7 +525,23 @@ def resend_verification():
         <p style="color:#9ca3af;font-size:14px;">Link expires in 24 hours.</p>
     </body></html>
     """
+<<<<<<< HEAD
     send_email(user.email, "Resend: Verify your DriftDater account", email_body)
+=======
+
+    if not send_email(user.email, "Resend: Verify your DriftDater account", email_body):
+        db.session.rollback()
+        return (
+            jsonify(
+                {
+                    "error": "Verification email could not be sent. Please check email delivery configuration and try again."
+                }
+            ),
+            503,
+        )
+
+    db.session.commit()
+>>>>>>> d9a9bfc81d4487e3cc1eee4408b8b6144f7d7b84
 
     return (
         jsonify({"message": "Verification email sent. Please check your inbox."}),
@@ -493,7 +566,51 @@ def forgot_password():
 
     user = User.query.filter_by(email=email).first()
 
+<<<<<<< HEAD
     _generic_response = (
+=======
+    # Don't reveal if email exists (security best practice)
+    if not user:
+        return (
+            jsonify(
+                {
+                    "message": "If an account exists with this email, a password reset link has been sent."
+                }
+            ),
+            200,
+        )
+
+    # Generate password reset token
+    import secrets
+
+    secrets.token_urlsafe(32)
+
+    # Store token hash in database (in production, create a PasswordResetToken model)
+    # For now, we'll encode it in JWT
+    reset_jwt = generate_token(user.user_id, token_type="reset", expires_days=1)
+
+    reset_url = f"{current_app.config['FRONTEND_URL']}/reset-password?token={reset_jwt}"
+
+    email_body = f"""
+    <html>
+    <body>
+        <h2>Password Reset Request</h2>
+        <p>You requested to reset your password. Click the link below to create a new password:</p>
+        <p><a href="{reset_url}" style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">Reset Password</a></p>
+        <p>Or copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #6b7280;">{reset_url}</p>
+        <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;">
+        <p style="color: #9ca3af; font-size: 14px;">This link will expire in 1 hour.</p>
+        <p style="color: #9ca3af; font-size: 14px;">If you didn't request this, you can safely ignore this email and your password will remain unchanged.</p>
+    </body>
+    </html>
+    """
+
+    if not send_email(user.email, "Password Reset Request", email_body):
+        return jsonify({"error": "Password reset email could not be sent."}), 503
+
+    return (
+>>>>>>> d9a9bfc81d4487e3cc1eee4408b8b6144f7d7b84
         jsonify(
             {
                 "message": "If an account exists with this email, a password reset link has been sent."

@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import { API_BASE_URL } from './helpers/auth.js'
 
 const TEST_PASSWORD = 'TestPass123!'
 

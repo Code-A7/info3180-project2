@@ -70,8 +70,10 @@ const clearAuthData = () => {
 /**
  * Configured axios instance for API requests
  */
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/";
+
 const api = axios.create({
-  baseURL: "/",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -177,7 +179,7 @@ api.interceptors.response.use(
         const user = getUser();
         if (user?.id) {
           const refreshResponse = await axios.post(
-            "/api/auth/refresh",
+            `${API_BASE_URL}/api/auth/refresh`,
             {
               user_id: user.id,
             },

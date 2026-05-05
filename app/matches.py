@@ -405,7 +405,7 @@ def like_user(to_user_id):
     from_profile = Profile.query.filter_by(user_id=user.user_id).first()
 
     if is_mutual:
-        new_match = create_match(user.user_id, to_user_id)
+        create_match(user.user_id, to_user_id)
 
         create_notification(
             to_user_id,

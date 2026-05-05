@@ -997,7 +997,7 @@ const loadData = async () => {
       const daysSince = (Date.now() - matchDate) / (1000 * 60 * 60 * 24);
       return daysSince <= 7;
     }).length;
-  } catch (error) {
+  } catch {
     hasProfile.value = false;
   }
 

@@ -2,7 +2,7 @@ name: Lint
 
 on:
   push:
-    branches: [main, develop, master]
+    branches: [main, develop, master, deployment]
   pull_request:
   workflow_dispatch:
 
@@ -68,7 +68,7 @@ jobs:
 
       - name: Run MyPy
         run: |
-          mypy app tests --ignore-missing-imports --ignore-missing-imports || true
+          mypy app tests --ignore-missing-imports || true
 
   eslint:
     name: ESLint (Frontend)

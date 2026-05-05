@@ -3,7 +3,7 @@ import * as services from "./services.js";
 import * as composables from "./composables.js";
 import { createTestRouter, routerLinkStub } from "./router.js";
 
-// Move all vi.mock() calls to top level as required by vitest 4.x
+// Move all vi.mock() calls to top level as required by vitest
 vi.mock("../services/api", () => ({
   default: services.mockApi,
   get: services.mockApi.get,
@@ -76,7 +76,7 @@ vi.mock("../composables/useMessages", () => ({
 
 export { services, composables, createTestRouter, routerLinkStub };
 
-export const setupCentralMocks = (vi) => {
+export const setupCentralMocks = (_vi) => {
   // Mocks are now at top level, this function can be removed or kept for backward compatibility
 };
 
@@ -84,15 +84,25 @@ export const resetAllMocks = () => {
   services.mockApi.get.mockClear();
   services.mockApi.post.mockClear();
   services.mockApi.put.mockClear();
+  services.mockApi.delete.mockClear();
+  services.mockApi.patch.mockClear();
 
   services.mockAuthService.login.mockClear();
   services.mockAuthService.logout.mockClear();
   services.mockAuthService.getStoredUser.mockClear();
+  services.mockAuthService.getCurrentUser.mockClear();
+  services.mockAuthService.verifyEmail.mockClear();
+  services.mockAuthService.resendVerification.mockClear();
+  services.mockAuthService.forgotPassword.mockClear();
+  services.mockAuthService.resetPassword.mockClear();
 
   services.mockProfileService.getProfile.mockClear();
   services.mockMatchService.getMatches.mockClear();
   services.mockMessageService.getConversations.mockClear();
+  services.mockMessageService.getMessageHistory.mockClear();
   services.mockSocketService.on.mockClear();
+  services.mockSocketService.connect.mockClear();
+  services.mockSocketService.disconnect.mockClear();
 };
 
 export const setAuthUser = (user) => {
@@ -111,7 +121,7 @@ export const setProfileData = (profileData) => {
 
 export const setNoProfile = () => {
   services.mockProfileService.getProfile.mockRejectedValue(
-    new Error("No profile"),
+    new Error("No profile")
   );
 };
 
@@ -130,5 +140,25 @@ export const setMessages = (userId, messages, otherUser = null) => {
     has_next: false,
     page: 1,
     total_pages: 1,
+  });
+};
+
+export const setApiResponses = (method, url, data) => {
+  if (method === 'get') {
+    services.mockApi.get.mockResolvedValue({ data });
+  } else if (method === 'post') {
+    services.mockApi.post.mockResolvedValue({ data });
+  } else if (method === 'put') {
+    services.mockApi.put.mockResolvedValue({ data });
+  }
+};
+
+export const simulateTokenExpiry = () => {
+  services.mockApi.interceptors.response.use.mockImplementation((successFn, errorFn) => {
+    const error = {
+      response: { status: 401 },
+      config: { _retry: false }
+    };
+    return errorFn(error);
   });
 };

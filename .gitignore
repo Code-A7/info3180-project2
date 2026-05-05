@@ -36,6 +36,7 @@ venv
 
 # Environment Variables
 .env
+.env.production
 .flaskenv
 
 # Instance folder
@@ -63,3 +64,9 @@ uploads/*.jpg
 uploads/*.jpeg
 uploads/*.gif
 !uploads/.gitkeep
+
+# Debug Screenshots
+docs/debug/
+
+# Delete User From Database
+delete_user.py
