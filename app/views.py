@@ -653,7 +653,6 @@ def create_profile():
         relationship_goal=form.relationship_goal.data,
         occupation=form.occupation.data,
         visibility=form.visibility.data,
-        location=location,
     )
 
     db.session.add(profile)
