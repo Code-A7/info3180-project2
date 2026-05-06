@@ -135,6 +135,9 @@ class Profile(db.Model):
     age = db.Column(db.Integer, nullable=False)
     bio = db.Column(db.Text)
 
+    # Geographic location — required by spec for location-based matching
+    location = db.Column(db.String(150), nullable=True, index=True)
+
     # Age preferences
     preferred_age_min = db.Column(db.Integer, default=18)
     preferred_age_max = db.Column(db.Integer, default=50)

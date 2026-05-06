@@ -237,33 +237,28 @@ def match_pair(client, app, user_with_profile, second_user_with_profile):
                 "token2": response.json["token"],
             }
 
-    # Create match through API (likes) - but handle if already exists
-    try:
-        # User1 likes User2
-        client.post(
-            f"/api/matches/like/{user2_id}",
-            headers={"Authorization": f"Bearer {token1}"},
-        )
+    # User1 likes User2
+    r1 = client.post(
+        f"/api/matches/like/{user2_id}",
+        headers={"Authorization": f"Bearer {token1}"},
+    )
+    assert r1.status_code == 200, f"User1 like failed: {r1.json}"
 
-        # Get token for second user
-        response = client.post(
-            "/api/auth/login",
-            json={"email": "second@example.com", "password": "TestPass123!"},
-        )
-        token2 = response.json["token"]
+    # Get fresh token for second user
+    login_resp = client.post(
+        "/api/auth/login",
+        json={"email": "second@example.com", "password": "TestPass123!"},
+    )
+    assert login_resp.status_code == 200, f"Second user login failed: {login_resp.json}"
+    token2 = login_resp.json["token"]
 
-        # User2 likes User1 (mutual match)
-        client.post(
-            f"/api/matches/like/{user1_id}",
-            headers={"Authorization": f"Bearer {token2}"},
-        )
-    except Exception:
-        # Match might already exist from previous test, get token and continue
-        response = client.post(
-            "/api/auth/login",
-            json={"email": "second@example.com", "password": "TestPass123!"},
-        )
-        token2 = response.json.get("token", second_user_with_profile.get("token", ""))
+    # User2 likes User1 — this should trigger mutual match creation
+    r2 = client.post(
+        f"/api/matches/like/{user1_id}",
+        headers={"Authorization": f"Bearer {token2}"},
+    )
+    assert r2.status_code == 200, f"User2 like failed: {r2.json}"
+    assert r2.json.get("match") is True, f"Mutual match not created: {r2.json}"
 
     return {
         "user1": user_with_profile,

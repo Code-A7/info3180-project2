@@ -256,6 +256,8 @@ def like_user(to_user_id):
         db.session.add(like)
 
     # Check for mutual like
+    # Flush so check_mutual_like can see this like within the same transaction
+    db.session.flush()
     is_mutual = check_mutual_like(user.user_id, to_user_id)
 
     if is_mutual:

@@ -21,12 +21,22 @@ def check_match_exists(user1_id, user2_id):
 
 
 def get_socket_emit():
-    from app import socketio
+    """Return a WebSocket emit function, or a no-op if unavailable (e.g. in tests)."""
+    try:
+        from app import socketio
 
-    def emit(user_id, event, data):
-        socketio.emit(event, data, room=f"user_{user_id}")
+        def emit(user_id, event, data):
+            try:
+                socketio.emit(event, data, room=f"user_{user_id}")
+            except Exception as exc:
+                print(f"[WEBSOCKET ERROR] {exc}")
 
-    return emit
+        return emit
+    except Exception:
+        def noop(user_id, event, data):
+            pass
+
+        return noop
 
 
 @bp_messages.route("", methods=["GET"])
