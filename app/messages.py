@@ -28,15 +28,16 @@ def get_socket_emit():
         def emit(user_id, event, data):
             try:
                 socketio.emit(event, data, room=f"user_{user_id}")
-            except Exception as exc:
-                print(f"[WEBSOCKET ERROR] {exc}")
+            except Exception as e:
+                print(f"SocketIO emit error: {e}")
 
         return emit
     except Exception:
-        def noop(user_id, event, data):
+        # Fallback no-op emitter for test environments
+        def noop_emit(user_id, event, data):
             pass
 
-        return noop
+        return noop_emit
 
 
 @bp_messages.route("", methods=["GET"])
