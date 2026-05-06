@@ -32,8 +32,12 @@
     "@vitest/ui": "^4.1.5",
     "@vue/test-utils": "^2.4.9",
     "autoprefixer": "^10.4.27",
+<<<<<<< HEAD
+    "cypress": "^4.2.0",
+=======
     "cypress": "^15.14.1",
     "dotenv": "^17.4.2",
+>>>>>>> d9a9bfc81d4487e3cc1eee4408b8b6144f7d7b84
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.9.0",

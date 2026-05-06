@@ -73,6 +73,8 @@ const markAllAsRead = async () => {
       ...n,
       is_read: true,
     }));
+    // Tell AppHeader to refresh its badge count
+    window.dispatchEvent(new CustomEvent("notifications-updated"));
   } catch (error) {
     console.error("Failed to mark all as read:", error);
   }
@@ -82,7 +84,13 @@ const handleNotificationClick = async (notification) => {
   if (!notification.is_read) {
     try {
       await notificationService.markAsRead(notification.id);
-      notification.is_read = true;
+      // Update local state reactively
+      const index = notifications.value.findIndex(n => n.id === notification.id);
+      if (index !== -1) {
+        notifications.value[index] = { ...notifications.value[index], is_read: true };
+      }
+      // Tell AppHeader to refresh its badge count
+      window.dispatchEvent(new CustomEvent("notifications-updated"));
     } catch (error) {
       console.error("Failed to mark as read:", error);
     }
